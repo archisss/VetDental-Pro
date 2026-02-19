@@ -259,23 +259,23 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
 
   if (!currentReport) {
     return (
-      <div className="max-w-2xl mx-auto space-y-8 py-10">
+      <div className="max-w-2xl mx-auto space-y-8 py-10 animate-in fade-in zoom-in-95 duration-500">
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-slate-900">Iniciar Reporte Médico</h2>
-          <p className="text-slate-500">Seleccione un paciente para comenzar la evaluación dental</p>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Iniciar Reporte Médico</h2>
+          <p className="text-slate-500 dark:text-slate-400">Seleccione un paciente para comenzar la evaluación dental</p>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 space-y-6">
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-700 space-y-6 transition-all">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Seleccionar Animal / Paciente</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Seleccionar Animal / Paciente</label>
             <select
-              className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-lg text-slate-900"
+              className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-lg text-slate-900 dark:text-white transition-all"
               value={selectedPetId}
               onChange={e => setSelectedPetId(e.target.value)}
             >
-              <option value="" className="text-slate-500">-- Elige un paciente --</option>
+              <option value="" className="text-slate-500 dark:text-slate-600">-- Elige un paciente --</option>
               {pets.map(pet => (
-                <option key={pet.id} value={pet.id} className="text-slate-900">
+                <option key={pet.id} value={pet.id} className="text-slate-900 dark:text-slate-100">
                   {pet.name} ({pet.ownerName}) - {pet.type}
                 </option>
               ))}
@@ -298,7 +298,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   const selectedPet = pets.find(p => p.id === selectedPetId);
 
   return (
-    <div className="space-y-8 pb-20 relative">
+    <div className="space-y-8 pb-20 relative animate-in fade-in duration-500">
       {showSavedToast && (
         <div className="fixed top-10 right-10 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2 animate-bounce z-50">
           <Check className="w-5 h-5" />
@@ -310,13 +310,13 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
         <div className="flex items-center gap-4">
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">Reporte Dental: {selectedPet?.name}</h2>
-            <p className="text-slate-500">Dueño: {selectedPet?.ownerName} | {new Date(currentReport.date).toLocaleDateString()}</p>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reporte Dental: {selectedPet?.name}</h2>
+            <p className="text-slate-500 dark:text-slate-400">Dueño: {selectedPet?.ownerName} | {new Date(currentReport.date).toLocaleDateString()}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -324,8 +324,8 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             onClick={handleExplicitSave}
             className={`px-6 py-2 rounded-xl font-bold transition-all flex items-center gap-2 border shadow-sm ${
               hasUnsavedChanges 
-              ? 'bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-100' 
-              : 'bg-white text-slate-600 border-slate-200'
+              ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-800/50' 
+              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
             }`}
           >
             <Save className="w-4 h-4" />
@@ -334,7 +334,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
           <button
             onClick={handlePreviewReport}
             disabled={reportItems.length === 0}
-            className="bg-slate-800 text-white px-6 py-2 rounded-xl font-bold hover:bg-slate-900 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
+            className="bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-2 rounded-xl font-bold hover:bg-slate-900 dark:hover:bg-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
           >
             <Eye className="w-4 h-4" />
             Vista Previa (Imprimir)
@@ -345,28 +345,28 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
           {/* Historia Clínica Section */}
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
-            <div className="flex items-center gap-2 text-indigo-600 font-bold uppercase text-xs tracking-wider">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
+            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
               <ClipboardList className="w-4 h-4" />
               Historia Clínica
             </div>
             <textarea
               placeholder="Describa la historia clínica relevante para este procedimiento..."
-              className="w-full border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 placeholder:text-slate-400"
+              className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
               value={clinicalHistory}
               onChange={e => { setClinicalHistory(e.target.value); setHasUnsavedChanges(true); }}
             />
           </div>
 
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-6">
-            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6 transition-all">
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
               <ImagePlus className="w-5 h-5 text-indigo-500" />
               Agregar Nueva Evidencia
             </h3>
             
             <div 
               className={`relative border-2 border-dashed rounded-2xl aspect-video flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
-                currentImage ? 'border-indigo-400 bg-slate-900' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+                currentImage ? 'border-indigo-400 dark:border-indigo-500 bg-slate-900' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-900/80'
               }`}
               onClick={() => fileInputRef.current?.click()}
             >
@@ -381,8 +381,8 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                 />
               ) : (
                 <>
-                  <ImagePlus className="w-12 h-12 text-slate-300 mb-2" />
-                  <p className="text-slate-400 font-medium">Haga clic para subir una foto</p>
+                  <ImagePlus className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-2" />
+                  <p className="text-slate-400 dark:text-slate-600 font-medium">Haga clic para subir una foto</p>
                 </>
               )}
               <input 
@@ -398,14 +398,14 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
               <div className="flex gap-4">
                 <button
                   onClick={(e) => { e.stopPropagation(); setIsMirrored(!isMirrored); }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors font-medium"
                 >
                   <FlipHorizontal className="w-4 h-4" />
                   Efecto Espejo
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); setRotation(r => (r + 90) % 360); }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-colors font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors font-medium"
                 >
                   <RotateCcw className="w-4 h-4" />
                   Girar 90°
@@ -414,10 +414,10 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 ml-1">Descripción Médica del Hallazgo</label>
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Descripción Médica del Hallazgo</label>
               <textarea
                 placeholder="Describa el hallazgo dental para el dueño de la mascota..."
-                className="w-full border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 placeholder:text-slate-400"
+                className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
                 value={currentDescription}
                 onChange={e => setCurrentDescription(e.target.value)}
               />
@@ -434,28 +434,28 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
           </div>
 
           {/* Tratamiento Recomendado Section */}
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
-            <div className="flex items-center gap-2 text-indigo-600 font-bold uppercase text-xs tracking-wider">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
+            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
               <Stethoscope className="w-4 h-4" />
               Tratamiento Recomendado
             </div>
             <textarea
               placeholder="Indique los pasos a seguir y recomendaciones terapéuticas..."
-              className="w-full border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 placeholder:text-slate-400"
+              className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
               value={recommendedTreatment}
               onChange={e => { setRecommendedTreatment(e.target.value); setHasUnsavedChanges(true); }}
             />
           </div>
 
           {/* Otros Comentarios Section */}
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
-            <div className="flex items-center gap-2 text-indigo-600 font-bold uppercase text-xs tracking-wider">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
+            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
               <MessageSquare className="w-4 h-4" />
               Otros Comentarios
             </div>
             <textarea
               placeholder="Notas adicionales, advertencias o recordatorios..."
-              className="w-full border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 placeholder:text-slate-400"
+              className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
               value={otherComments}
               onChange={e => { setOtherComments(e.target.value); setHasUnsavedChanges(true); }}
             />
@@ -463,14 +463,14 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 uppercase text-xs tracking-wider">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 uppercase text-xs tracking-wider">
             Evidencias Acumuladas
-            <span className="bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full text-xs font-bold">{reportItems.length}</span>
+            <span className="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full text-xs font-bold">{reportItems.length}</span>
           </h3>
           <div className="grid grid-cols-1 gap-4 overflow-y-auto max-h-[1200px] pr-2">
             {reportItems.map((item, index) => (
-              <div key={item.id} className="bg-white p-4 rounded-2xl border border-slate-200 flex gap-4 shadow-sm hover:shadow-md transition-shadow group">
-                <div className="w-28 h-28 bg-slate-900 rounded-xl overflow-hidden shrink-0 border border-slate-800">
+              <div key={item.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex gap-4 shadow-sm hover:shadow-md transition-all group">
+                <div className="w-28 h-28 bg-slate-900 rounded-xl overflow-hidden shrink-0 border border-slate-800 dark:border-slate-700">
                   <img
                     src={item.imageData}
                     className="w-full h-full object-contain"
@@ -481,15 +481,15 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                 </div>
                 <div className="flex-1 space-y-2">
                   <div className="flex justify-between items-start">
-                    <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded">ITEM #{index + 1}</span>
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded">ITEM #{index + 1}</span>
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                   </div>
-                  <p className="text-slate-600 text-sm line-clamp-3 italic leading-relaxed">"{item.description || 'Sin descripción'}"</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm line-clamp-3 italic leading-relaxed">"{item.description || 'Sin descripción'}"</p>
                 </div>
               </div>
             ))}
             {reportItems.length === 0 && (
-              <div className="h-64 border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center text-slate-400">
+              <div className="h-64 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
                 <FileText className="w-12 h-12 mb-2 opacity-10" />
                 <p className="text-sm">Aún no hay evidencias guardadas</p>
               </div>

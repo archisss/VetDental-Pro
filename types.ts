@@ -35,6 +35,17 @@ export interface DentalReport {
   notes: string;
 }
 
+export interface Appointment {
+  id: string;
+  petId: string;
+  petName: string;
+  ownerName: string;
+  date: string;
+  time: string;
+  service: string;
+  status: 'Confirmado' | 'Pendiente' | 'Cancelado';
+}
+
 export interface User {
   id: string;
   username: string;

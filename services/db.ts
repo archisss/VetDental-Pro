@@ -1,10 +1,11 @@
 
-import { Pet, DentalReport, ReportItem, PetType } from '../types';
+import { Pet, DentalReport, ReportItem, Appointment, PetType } from '../types';
 
 const STORAGE_KEYS = {
   PETS: 'vet_dental_pets',
   REPORTS: 'vet_dental_reports',
-  ITEMS: 'vet_dental_items'
+  ITEMS: 'vet_dental_items',
+  APPOINTMENTS: 'vet_dental_appointments'
 };
 
 const getFromStorage = <T,>(key: string, defaultValue: T): T => {
@@ -74,12 +75,30 @@ export const DB = {
     saveToStorage(STORAGE_KEYS.ITEMS, [...allItems, newItem]);
     return newItem;
   },
-  updateReportItem: (item: ReportItem): void => {
-    const allItems = getFromStorage<ReportItem[]>(STORAGE_KEYS.ITEMS, []);
-    const index = allItems.findIndex(i => i.id === item.id);
-    if (index >= 0) {
-      allItems[index] = item;
-      saveToStorage(STORAGE_KEYS.ITEMS, allItems);
+  
+  // Appointments
+  getAppointments: (): Appointment[] => getFromStorage(STORAGE_KEYS.APPOINTMENTS, []),
+  saveAppointment: (appointment: Appointment | Omit<Appointment, 'id'>): Appointment => {
+    const appointments = DB.getAppointments();
+    
+    if ('id' in appointment) {
+      const index = appointments.findIndex(a => a.id === appointment.id);
+      if (index >= 0) {
+        appointments[index] = appointment as Appointment;
+        saveToStorage(STORAGE_KEYS.APPOINTMENTS, appointments);
+        return appointment as Appointment;
+      }
     }
+    
+    const newAppointment: Appointment = {
+      ...appointment,
+      id: crypto.randomUUID()
+    } as Appointment;
+    saveToStorage(STORAGE_KEYS.APPOINTMENTS, [...appointments, newAppointment]);
+    return newAppointment;
+  },
+  deleteAppointment: (id: string): void => {
+    const appointments = DB.getAppointments();
+    saveToStorage(STORAGE_KEYS.APPOINTMENTS, appointments.filter(a => a.id !== id));
   }
 };
