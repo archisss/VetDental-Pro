@@ -17,12 +17,20 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
 // Database connection pool
-const pool = mysql.createPool({
-  host: process.env.MYSQL_HOST || 'localhost',
-  user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || '',
-  database: process.env.MYSQL_DATABASE || 'vet_dental',
+const dbConfig = {
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
   port: Number(process.env.MYSQL_PORT) || 3306,
+};
+
+if (!dbConfig.host || !dbConfig.user || !dbConfig.database) {
+  console.warn('⚠️  Database environment variables are missing. Defaulting to localhost (this will fail in production).');
+}
+
+const pool = mysql.createPool({
+  ...dbConfig,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -238,7 +246,8 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     app.use(express.static(path.join(__dirname, 'dist')));
-    app.get('*', (req, res) => {
+    // Express 5 requires '/*' or '(.*)' for wildcards
+    app.get('/*', (req, res) => {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'));
     });
   }
