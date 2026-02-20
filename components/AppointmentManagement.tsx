@@ -26,12 +26,17 @@ const AppointmentManagement: React.FC = () => {
   });
 
   useEffect(() => {
-    setPets(DB.getPets());
-    refreshAppointments();
+    const loadData = async () => {
+      const petsData = await DB.getPets();
+      setPets(petsData);
+      await refreshAppointments();
+    };
+    loadData();
   }, []);
 
-  const refreshAppointments = () => {
-    setAppointments(DB.getAppointments().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+  const refreshAppointments = async () => {
+    const apps = await DB.getAppointments();
+    setAppointments(apps.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
   };
 
   const resetForm = () => {
@@ -46,7 +51,7 @@ const AppointmentManagement: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const selectedPet = pets.find(p => p.id === formData.petId);
     if (!selectedPet) return;
@@ -61,8 +66,8 @@ const AppointmentManagement: React.FC = () => {
       appointmentData.id = editingId;
     }
 
-    DB.saveAppointment(appointmentData);
-    refreshAppointments();
+    await DB.saveAppointment(appointmentData);
+    await refreshAppointments();
     resetForm();
   };
 
@@ -78,10 +83,10 @@ const AppointmentManagement: React.FC = () => {
     setIsAdding(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('¿Está seguro de eliminar esta cita?')) {
-      DB.deleteAppointment(id);
-      refreshAppointments();
+      await DB.deleteAppointment(id);
+      await refreshAppointments();
     }
   };
 

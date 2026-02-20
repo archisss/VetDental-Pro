@@ -32,18 +32,23 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setPets(DB.getPets());
-    if (reportId) {
-      const existing = DB.getReportById(reportId);
-      if (existing) {
-        setCurrentReport(existing);
-        setSelectedPetId(existing.petId);
-        setClinicalHistory(existing.clinicalHistory || '');
-        setRecommendedTreatment(existing.recommendedTreatment || '');
-        setOtherComments(existing.otherComments || '');
-        setReportItems(DB.getReportItems(reportId));
+    const loadData = async () => {
+      const petsData = await DB.getPets();
+      setPets(petsData);
+      if (reportId) {
+        const existing = await DB.getReportById(reportId);
+        if (existing) {
+          setCurrentReport(existing);
+          setSelectedPetId(existing.petId);
+          setClinicalHistory(existing.clinicalHistory || '');
+          setRecommendedTreatment(existing.recommendedTreatment || '');
+          setOtherComments(existing.otherComments || '');
+          const items = await DB.getReportItems(reportId);
+          setReportItems(items);
+        }
       }
-    }
+    };
+    loadData();
   }, [reportId]);
 
   const handleStartReport = () => {
@@ -70,7 +75,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     }
   };
 
-  const handleSaveItem = () => {
+  const handleSaveItem = async () => {
     if (!currentReport || !currentImage) return;
 
     const reportToSave = {
@@ -79,7 +84,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
       recommendedTreatment,
       otherComments
     };
-    DB.saveReport(reportToSave);
+    await DB.saveReport(reportToSave);
     setCurrentReport(reportToSave);
 
     const itemData = {
@@ -91,11 +96,11 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     };
 
     if (editingItemId) {
-      const updatedItem = DB.saveReportItem({ ...itemData, id: editingItemId } as ReportItem);
+      const updatedItem = await DB.saveReportItem({ ...itemData, id: editingItemId } as ReportItem);
       setReportItems(reportItems.map(item => item.id === editingItemId ? updatedItem : item));
       setEditingItemId(null);
     } else {
-      const newItem = DB.saveReportItem(itemData);
+      const newItem = await DB.saveReportItem(itemData);
       setReportItems([...reportItems, newItem]);
     }
 
@@ -117,9 +122,9 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDeleteItem = (id: string) => {
+  const handleDeleteItem = async (id: string) => {
     if (window.confirm('¿Está seguro de que desea eliminar esta evidencia?')) {
-      DB.deleteReportItem(id);
+      await DB.deleteReportItem(id);
       setReportItems(reportItems.filter(item => item.id !== id));
       if (editingItemId === id) {
         setEditingItemId(null);
@@ -141,7 +146,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleExplicitSave = () => {
+  const handleExplicitSave = async () => {
     if (!currentReport) return;
     const reportToSave = {
       ...currentReport,
@@ -149,7 +154,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
       recommendedTreatment,
       otherComments
     };
-    DB.saveReport(reportToSave);
+    await DB.saveReport(reportToSave);
     setCurrentReport(reportToSave);
     setHasUnsavedChanges(false);
     setShowSavedToast(true);

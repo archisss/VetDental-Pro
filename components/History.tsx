@@ -14,17 +14,22 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
   const [reports, setReports] = useState<DentalReport[]>([]);
 
   useEffect(() => {
-    setPets(DB.getPets());
+    const loadPets = async () => {
+      const petsData = await DB.getPets();
+      setPets(petsData);
+    };
+    loadPets();
   }, []);
 
-  const handleSelectPet = (pet: Pet) => {
+  const handleSelectPet = async (pet: Pet) => {
     setSelectedPet(pet);
-    setReports(DB.getReportsByPet(pet.id));
+    const petReports = await DB.getReportsByPet(pet.id);
+    setReports(petReports);
   };
 
-  const handleViewReportPDF = (report: DentalReport) => {
+  const handleViewReportPDF = async (report: DentalReport) => {
     if (!selectedPet) return;
-    const reportItems = DB.getReportItems(report.id);
+    const reportItems = await DB.getReportItems(report.id);
     
     const htmlContent = `
       <!DOCTYPE html>

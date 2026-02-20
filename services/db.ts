@@ -1,53 +1,48 @@
 
-import { Pet, DentalReport, ReportItem, Appointment, PetType } from '../types';
+import { Pet, DentalReport, ReportItem, Appointment } from '../types';
 
-const STORAGE_KEYS = {
-  PETS: 'vet_dental_pets',
-  REPORTS: 'vet_dental_reports',
-  ITEMS: 'vet_dental_items',
-  APPOINTMENTS: 'vet_dental_appointments'
-};
-
-const getFromStorage = <T,>(key: string, defaultValue: T): T => {
-  const data = localStorage.getItem(key);
-  return data ? JSON.parse(data) : defaultValue;
-};
-
-const saveToStorage = (key: string, data: any) => {
-  localStorage.setItem(key, JSON.stringify(data));
-};
+const API_BASE = '/api';
 
 export const DB = {
   // Pets
-  getPets: (): Pet[] => getFromStorage(STORAGE_KEYS.PETS, []),
-  savePet: (pet: Omit<Pet, 'id' | 'createdAt'>): Pet => {
-    const pets = DB.getPets();
+  getPets: async (): Promise<Pet[]> => {
+    const res = await fetch(`${API_BASE}/pets`);
+    return res.json();
+  },
+  savePet: async (pet: Omit<Pet, 'id' | 'createdAt'>): Promise<Pet> => {
     const newPet: Pet = {
       ...pet,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString()
     };
-    saveToStorage(STORAGE_KEYS.PETS, [...pets, newPet]);
-    return newPet;
+    const res = await fetch(`${API_BASE}/pets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newPet)
+    });
+    return res.json();
   },
 
   // Reports
-  getReports: (): DentalReport[] => getFromStorage(STORAGE_KEYS.REPORTS, []),
-  getReportById: (id: string): DentalReport | undefined => {
-    return DB.getReports().find(r => r.id === id);
+  getReports: async (): Promise<DentalReport[]> => {
+    const res = await fetch(`${API_BASE}/reports`);
+    return res.json();
   },
-  getReportsByPet: (petId: string): DentalReport[] => {
-    return DB.getReports().filter(r => r.petId === petId);
+  getReportById: async (id: string): Promise<DentalReport | undefined> => {
+    const res = await fetch(`${API_BASE}/reports/${id}`);
+    if (!res.ok) return undefined;
+    return res.json();
   },
-  saveReport: (report: DentalReport): void => {
-    const reports = DB.getReports();
-    const index = reports.findIndex(r => r.id === report.id);
-    if (index >= 0) {
-      reports[index] = report;
-      saveToStorage(STORAGE_KEYS.REPORTS, reports);
-    } else {
-      saveToStorage(STORAGE_KEYS.REPORTS, [...reports, report]);
-    }
+  getReportsByPet: async (petId: string): Promise<DentalReport[]> => {
+    const res = await fetch(`${API_BASE}/pets/${petId}/reports`);
+    return res.json();
+  },
+  saveReport: async (report: DentalReport): Promise<void> => {
+    await fetch(`${API_BASE}/reports`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(report)
+    });
   },
   createReport: (petId: string): DentalReport => {
     return {
@@ -62,57 +57,50 @@ export const DB = {
   },
 
   // Report Items
-  getReportItems: (reportId: string): ReportItem[] => {
-    const allItems = getFromStorage<ReportItem[]>(STORAGE_KEYS.ITEMS, []);
-    return allItems.filter(item => item.reportId === reportId);
+  getReportItems: async (reportId: string): Promise<ReportItem[]> => {
+    const res = await fetch(`${API_BASE}/reports/${reportId}/items`);
+    return res.json();
   },
-  saveReportItem: (item: Omit<ReportItem, 'id'> | ReportItem): ReportItem => {
-    const allItems = getFromStorage<ReportItem[]>(STORAGE_KEYS.ITEMS, []);
-    
-    if ('id' in item && item.id) {
-      const index = allItems.findIndex(i => i.id === item.id);
-      if (index >= 0) {
-        allItems[index] = item as ReportItem;
-        saveToStorage(STORAGE_KEYS.ITEMS, allItems);
-        return item as ReportItem;
-      }
-    }
-    
+  saveReportItem: async (item: Omit<ReportItem, 'id'> | ReportItem): Promise<ReportItem> => {
     const newItem: ReportItem = {
       ...item,
-      id: crypto.randomUUID()
-    };
-    saveToStorage(STORAGE_KEYS.ITEMS, [...allItems, newItem]);
-    return newItem;
+      id: 'id' in item && item.id ? item.id : crypto.randomUUID()
+    } as ReportItem;
+    
+    const res = await fetch(`${API_BASE}/report-items`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newItem)
+    });
+    return res.json();
   },
-  deleteReportItem: (id: string): void => {
-    const allItems = getFromStorage<ReportItem[]>(STORAGE_KEYS.ITEMS, []);
-    saveToStorage(STORAGE_KEYS.ITEMS, allItems.filter(item => item.id !== id));
+  deleteReportItem: async (id: string): Promise<void> => {
+    await fetch(`${API_BASE}/report-items/${id}`, {
+      method: 'DELETE'
+    });
   },
   
   // Appointments
-  getAppointments: (): Appointment[] => getFromStorage(STORAGE_KEYS.APPOINTMENTS, []),
-  saveAppointment: (appointment: Appointment | Omit<Appointment, 'id'>): Appointment => {
-    const appointments = DB.getAppointments();
-    
-    if ('id' in appointment) {
-      const index = appointments.findIndex(a => a.id === appointment.id);
-      if (index >= 0) {
-        appointments[index] = appointment as Appointment;
-        saveToStorage(STORAGE_KEYS.APPOINTMENTS, appointments);
-        return appointment as Appointment;
-      }
-    }
-    
+  getAppointments: async (): Promise<Appointment[]> => {
+    const res = await fetch(`${API_BASE}/appointments`);
+    return res.json();
+  },
+  saveAppointment: async (appointment: Appointment | Omit<Appointment, 'id'>): Promise<Appointment> => {
     const newAppointment: Appointment = {
       ...appointment,
-      id: crypto.randomUUID()
+      id: 'id' in appointment ? appointment.id : crypto.randomUUID()
     } as Appointment;
-    saveToStorage(STORAGE_KEYS.APPOINTMENTS, [...appointments, newAppointment]);
-    return newAppointment;
+    
+    const res = await fetch(`${API_BASE}/appointments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newAppointment)
+    });
+    return res.json();
   },
-  deleteAppointment: (id: string): void => {
-    const appointments = DB.getAppointments();
-    saveToStorage(STORAGE_KEYS.APPOINTMENTS, appointments.filter(a => a.id !== id));
+  deleteAppointment: async (id: string): Promise<void> => {
+    await fetch(`${API_BASE}/appointments/${id}`, {
+      method: 'DELETE'
+    });
   }
 };
