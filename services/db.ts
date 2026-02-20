@@ -66,14 +66,28 @@ export const DB = {
     const allItems = getFromStorage<ReportItem[]>(STORAGE_KEYS.ITEMS, []);
     return allItems.filter(item => item.reportId === reportId);
   },
-  saveReportItem: (item: Omit<ReportItem, 'id'>): ReportItem => {
+  saveReportItem: (item: Omit<ReportItem, 'id'> | ReportItem): ReportItem => {
     const allItems = getFromStorage<ReportItem[]>(STORAGE_KEYS.ITEMS, []);
+    
+    if ('id' in item && item.id) {
+      const index = allItems.findIndex(i => i.id === item.id);
+      if (index >= 0) {
+        allItems[index] = item as ReportItem;
+        saveToStorage(STORAGE_KEYS.ITEMS, allItems);
+        return item as ReportItem;
+      }
+    }
+    
     const newItem: ReportItem = {
       ...item,
       id: crypto.randomUUID()
     };
     saveToStorage(STORAGE_KEYS.ITEMS, [...allItems, newItem]);
     return newItem;
+  },
+  deleteReportItem: (id: string): void => {
+    const allItems = getFromStorage<ReportItem[]>(STORAGE_KEYS.ITEMS, []);
+    saveToStorage(STORAGE_KEYS.ITEMS, allItems.filter(item => item.id !== id));
   },
   
   // Appointments

@@ -1,7 +1,5 @@
 {
   "name": "VetDental Pro",
   "description": "A professional veterinary dental management system for patient records, medical history, and dynamic image-based dental reports.",
-  "requestFramePermissions": [
-    "camera"
-  ]
+  "requestFramePermissions": []
 }

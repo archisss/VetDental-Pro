@@ -19,13 +19,18 @@ const PatientManagement: React.FC = () => {
   });
 
   useEffect(() => {
-    setPets(DB.getPets());
+    const loadPets = async () => {
+      const loadedPets = await DB.getPets();
+      setPets(loadedPets);
+    };
+    loadPets();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    DB.savePet(formData);
-    setPets(DB.getPets());
+    await DB.savePet(formData);
+    const updatedPets = await DB.getPets();
+    setPets(updatedPets);
     setIsAdding(false);
     setFormData({
       ownerName: '',

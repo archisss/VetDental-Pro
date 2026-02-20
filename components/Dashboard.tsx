@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { DB } from '../services/db';
 import { Users, FileText, ClipboardList, Activity, Sun, Moon, Monitor, Clock } from 'lucide-react';
 import { Theme } from '../App';
+import { Appointment } from '../types';
 
 interface DashboardProps {
   currentTheme: Theme;
@@ -10,16 +11,34 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ currentTheme, onThemeChange }) => {
-  const petsCount = DB.getPets().length;
-  const reportsCount = DB.getReports().length;
-  const appointments = DB.getAppointments()
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 5); // Just show the first 5 upcoming
+  const [petsCount, setPetsCount] = useState(0);
+  const [reportsCount, setReportsCount] = useState(0);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [totalAppointments, setTotalAppointments] = useState(0);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const pets = await DB.getPets();
+      const reports = await DB.getReports();
+      const apps = await DB.getAppointments();
+      
+      setPetsCount(pets.length);
+      setReportsCount(reports.length);
+      setTotalAppointments(apps.length);
+      
+      setAppointments(
+        apps
+          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+          .slice(0, 5)
+      );
+    };
+    loadData();
+  }, []);
 
   const stats = [
     { label: 'Pacientes Totales', value: petsCount, icon: Users, color: 'bg-blue-500' },
     { label: 'Reportes Generados', value: reportsCount, icon: FileText, color: 'bg-indigo-500' },
-    { label: 'Citas Agendadas', value: DB.getAppointments().length, icon: ClipboardList, color: 'bg-emerald-500' },
+    { label: 'Citas Agendadas', value: totalAppointments, icon: ClipboardList, color: 'bg-emerald-500' },
     { label: 'Tasa de Éxito', value: '98%', icon: Activity, color: 'bg-amber-500' },
   ];
 

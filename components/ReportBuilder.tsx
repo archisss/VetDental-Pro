@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DB } from '../services/db';
 import { Pet, DentalReport, ReportItem } from '../types';
-import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare } from 'lucide-react';
+import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X } from 'lucide-react';
 
 interface ReportBuilderProps {
   reportId?: string | null;
@@ -27,6 +27,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   const [currentDescription, setCurrentDescription] = useState('');
   const [rotation, setRotation] = useState(0);
   const [isMirrored, setIsMirrored] = useState(false);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -81,17 +82,58 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     DB.saveReport(reportToSave);
     setCurrentReport(reportToSave);
 
-    const newItem = DB.saveReportItem({
+    const itemData = {
       reportId: currentReport.id,
       imageData: currentImage,
       description: currentDescription,
       rotation,
       isMirrored
-    });
+    };
 
-    setReportItems([...reportItems, newItem]);
+    if (editingItemId) {
+      const updatedItem = DB.saveReportItem({ ...itemData, id: editingItemId } as ReportItem);
+      setReportItems(reportItems.map(item => item.id === editingItemId ? updatedItem : item));
+      setEditingItemId(null);
+    } else {
+      const newItem = DB.saveReportItem(itemData);
+      setReportItems([...reportItems, newItem]);
+    }
+
     setHasUnsavedChanges(true);
     
+    setCurrentImage(null);
+    setCurrentDescription('');
+    setRotation(0);
+    setIsMirrored(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleEditItem = (item: ReportItem) => {
+    setEditingItemId(item.id);
+    setCurrentImage(item.imageData);
+    setCurrentDescription(item.description);
+    setRotation(item.rotation);
+    setIsMirrored(item.isMirrored);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteItem = (id: string) => {
+    if (window.confirm('¿Está seguro de que desea eliminar esta evidencia?')) {
+      DB.deleteReportItem(id);
+      setReportItems(reportItems.filter(item => item.id !== id));
+      if (editingItemId === id) {
+        setEditingItemId(null);
+        setCurrentImage(null);
+        setCurrentDescription('');
+        setRotation(0);
+        setIsMirrored(false);
+      }
+      setHasUnsavedChanges(true);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingItemId(null);
     setCurrentImage(null);
     setCurrentDescription('');
     setRotation(0);
@@ -359,10 +401,21 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
           </div>
 
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-6 transition-all">
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-              <ImagePlus className="w-5 h-5 text-indigo-500" />
-              Agregar Nueva Evidencia
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <ImagePlus className="w-5 h-5 text-indigo-500" />
+                {editingItemId ? 'Editar Evidencia' : 'Agregar Nueva Evidencia'}
+              </h3>
+              {editingItemId && (
+                <button
+                  onClick={handleCancelEdit}
+                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-1 text-sm font-medium"
+                >
+                  <X className="w-4 h-4" />
+                  Cancelar Edición
+                </button>
+              )}
+            </div>
             
             <div 
               className={`relative border-2 border-dashed rounded-2xl aspect-video flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
@@ -429,7 +482,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
               className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg"
             >
               <Save className="w-5 h-5" />
-              Añadir Hallazgo al Reporte
+              {editingItemId ? 'Guardar Cambios' : 'Añadir Hallazgo al Reporte'}
             </button>
           </div>
 
@@ -482,7 +535,22 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                 <div className="flex-1 space-y-2">
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded">ITEM #{index + 1}</span>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleEditItem(item)}
+                        className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                        title="Editar"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   <p className="text-slate-600 dark:text-slate-400 text-sm line-clamp-3 italic leading-relaxed">"{item.description || 'Sin descripción'}"</p>
                 </div>
