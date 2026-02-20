@@ -246,8 +246,8 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     app.use(express.static(path.join(__dirname, 'dist')));
-    // Express 5 / path-to-regexp v8+ requires (.*) for unnamed wildcards
-    app.get('(.*)', (req, res) => {
+    // Use a middleware without a path string to avoid path-to-regexp issues in Express 5
+    app.use((req, res) => {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'));
     });
   }
