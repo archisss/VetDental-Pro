@@ -29,7 +29,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             <Dog className="text-white w-12 h-12" />
           </div>
           <div className="space-y-1">
-            <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight transition-colors">VetDental Pro</h1>
+            <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight transition-colors">VetDental Proooo</h1>
             <p className="text-slate-500 dark:text-slate-400 font-medium">Sistema de Gestión de Cuidado Dental</p>
           </div>
         </div>
