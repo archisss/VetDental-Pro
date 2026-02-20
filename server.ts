@@ -59,7 +59,7 @@ async function initDB() {
       CREATE TABLE IF NOT EXISTS reports (
         id VARCHAR(36) PRIMARY KEY,
         petId VARCHAR(36) NOT NULL,
-        date DATETIME NOT NULL,
+        date VARCHAR(255) NOT NULL,
         clinicalHistory TEXT,
         recommendedTreatment TEXT,
         otherComments TEXT,
@@ -75,7 +75,7 @@ async function initDB() {
         imageData LONGTEXT NOT NULL,
         description TEXT,
         rotation INT DEFAULT 0,
-        isMirrored BOOLEAN DEFAULT FALSE,
+        isMirrored TINYINT(1) DEFAULT 0,
         FOREIGN KEY (reportId) REFERENCES reports(id) ON DELETE CASCADE
       )
     `);
@@ -158,6 +158,7 @@ app.get('/api/pets/:petId/reports', async (req, res) => {
 
 app.post('/api/reports', async (req, res) => {
   try {
+    console.log('Saving report:', req.body.id);
     const { id, petId, date, clinicalHistory, recommendedTreatment, otherComments, notes } = req.body;
     await pool.query(
       'INSERT INTO reports (id, petId, date, clinicalHistory, recommendedTreatment, otherComments, notes) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE clinicalHistory=?, recommendedTreatment=?, otherComments=?, notes=?',
@@ -165,6 +166,7 @@ app.post('/api/reports', async (req, res) => {
     );
     res.status(201).json(req.body);
   } catch (error) {
+    console.error('Error saving report:', error);
     res.status(500).json({ error: 'Failed to save report' });
   }
 });
@@ -181,13 +183,18 @@ app.get('/api/reports/:reportId/items', async (req, res) => {
 
 app.post('/api/report-items', async (req, res) => {
   try {
+    console.log('Saving report item for report:', req.body.reportId);
     const { id, reportId, imageData, description, rotation, isMirrored } = req.body;
+    // Convert boolean to 0/1 for MySQL
+    const mirroredValue = isMirrored ? 1 : 0;
+    
     await pool.query(
       'INSERT INTO report_items (id, reportId, imageData, description, rotation, isMirrored) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE imageData=?, description=?, rotation=?, isMirrored=?',
-      [id, reportId, imageData, description, rotation, isMirrored, imageData, description, rotation, isMirrored]
+      [id, reportId, imageData, description, rotation, mirroredValue, imageData, description, rotation, mirroredValue]
     );
     res.status(201).json(req.body);
   } catch (error) {
+    console.error('Error saving report item:', error);
     res.status(500).json({ error: 'Failed to save report item' });
   }
 });

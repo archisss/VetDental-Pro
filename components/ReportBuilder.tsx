@@ -78,39 +78,44 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   const handleSaveItem = async () => {
     if (!currentReport || !currentImage) return;
 
-    const reportToSave = {
-      ...currentReport,
-      clinicalHistory,
-      recommendedTreatment,
-      otherComments
-    };
-    await DB.saveReport(reportToSave);
-    setCurrentReport(reportToSave);
+    try {
+      const reportToSave = {
+        ...currentReport,
+        clinicalHistory,
+        recommendedTreatment,
+        otherComments
+      };
+      await DB.saveReport(reportToSave);
+      setCurrentReport(reportToSave);
 
-    const itemData = {
-      reportId: currentReport.id,
-      imageData: currentImage,
-      description: currentDescription,
-      rotation,
-      isMirrored
-    };
+      const itemData = {
+        reportId: currentReport.id,
+        imageData: currentImage,
+        description: currentDescription,
+        rotation,
+        isMirrored
+      };
 
-    if (editingItemId) {
-      const updatedItem = await DB.saveReportItem({ ...itemData, id: editingItemId } as ReportItem);
-      setReportItems(reportItems.map(item => item.id === editingItemId ? updatedItem : item));
-      setEditingItemId(null);
-    } else {
-      const newItem = await DB.saveReportItem(itemData);
-      setReportItems([...reportItems, newItem]);
+      if (editingItemId) {
+        const updatedItem = await DB.saveReportItem({ ...itemData, id: editingItemId } as ReportItem);
+        setReportItems(reportItems.map(item => item.id === editingItemId ? updatedItem : item));
+        setEditingItemId(null);
+      } else {
+        const newItem = await DB.saveReportItem(itemData);
+        setReportItems([...reportItems, newItem]);
+      }
+
+      setHasUnsavedChanges(true);
+      
+      setCurrentImage(null);
+      setCurrentDescription('');
+      setRotation(0);
+      setIsMirrored(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (error) {
+      console.error('Error saving item:', error);
+      alert('Error al guardar el hallazgo. Por favor, intente de nuevo.');
     }
-
-    setHasUnsavedChanges(true);
-    
-    setCurrentImage(null);
-    setCurrentDescription('');
-    setRotation(0);
-    setIsMirrored(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleEditItem = (item: ReportItem) => {
