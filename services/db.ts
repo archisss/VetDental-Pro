@@ -6,8 +6,14 @@ const API_BASE = '/api';
 export const DB = {
   // Pets
   getPets: async (): Promise<Pet[]> => {
-    const res = await fetch(`${API_BASE}/pets`);
-    return res.json();
+    try {
+      const res = await fetch(`${API_BASE}/pets`);
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error('Error fetching pets:', e);
+      return [];
+    }
   },
   savePet: async (pet: Omit<Pet, 'id' | 'createdAt'>): Promise<Pet> => {
     const newPet: Pet = {
@@ -25,17 +31,35 @@ export const DB = {
 
   // Reports
   getReports: async (): Promise<DentalReport[]> => {
-    const res = await fetch(`${API_BASE}/reports`);
-    return res.json();
+    try {
+      const res = await fetch(`${API_BASE}/reports`);
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error('Error fetching reports:', e);
+      return [];
+    }
   },
   getReportById: async (id: string): Promise<DentalReport | undefined> => {
-    const res = await fetch(`${API_BASE}/reports/${id}`);
-    if (!res.ok) return undefined;
-    return res.json();
+    try {
+      const res = await fetch(`${API_BASE}/reports/${id}`);
+      if (!res.ok) return undefined;
+      const data = await res.json();
+      return data.error ? undefined : data;
+    } catch (e) {
+      console.error('Error fetching report by id:', e);
+      return undefined;
+    }
   },
   getReportsByPet: async (petId: string): Promise<DentalReport[]> => {
-    const res = await fetch(`${API_BASE}/pets/${petId}/reports`);
-    return res.json();
+    try {
+      const res = await fetch(`${API_BASE}/pets/${petId}/reports`);
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error('Error fetching reports by pet:', e);
+      return [];
+    }
   },
   saveReport: async (report: DentalReport): Promise<void> => {
     await fetch(`${API_BASE}/reports`, {
@@ -58,8 +82,14 @@ export const DB = {
 
   // Report Items
   getReportItems: async (reportId: string): Promise<ReportItem[]> => {
-    const res = await fetch(`${API_BASE}/reports/${reportId}/items`);
-    return res.json();
+    try {
+      const res = await fetch(`${API_BASE}/reports/${reportId}/items`);
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error('Error fetching report items:', e);
+      return [];
+    }
   },
   saveReportItem: async (item: Omit<ReportItem, 'id'> | ReportItem): Promise<ReportItem> => {
     const newItem: ReportItem = {
@@ -82,8 +112,14 @@ export const DB = {
   
   // Appointments
   getAppointments: async (): Promise<Appointment[]> => {
-    const res = await fetch(`${API_BASE}/appointments`);
-    return res.json();
+    try {
+      const res = await fetch(`${API_BASE}/appointments`);
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error('Error fetching appointments:', e);
+      return [];
+    }
   },
   saveAppointment: async (appointment: Appointment | Omit<Appointment, 'id'>): Promise<Appointment> => {
     const newAppointment: Appointment = {
