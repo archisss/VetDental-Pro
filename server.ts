@@ -83,9 +83,13 @@ async function initDB() {
 
     // Ensure createdAt exists if table was created before
     try {
-      await connection.query('ALTER TABLE report_items ADD COLUMN IF NOT EXISTS createdAt DATETIME DEFAULT CURRENT_TIMESTAMP');
+      const [columns]: any = await connection.query('SHOW COLUMNS FROM report_items LIKE "createdAt"');
+      if (columns.length === 0) {
+        console.log('Adding createdAt column to report_items');
+        await connection.query('ALTER TABLE report_items ADD COLUMN createdAt DATETIME DEFAULT CURRENT_TIMESTAMP');
+      }
     } catch (e) {
-      // Ignore if column already exists or IF NOT EXISTS is not supported
+      console.error('Error checking/adding createdAt column:', e);
     }
 
     await connection.query(`
@@ -182,9 +186,12 @@ app.post('/api/reports', async (req, res) => {
 // Report Items
 app.get('/api/reports/:reportId/items', async (req, res) => {
   try {
+    console.log('Fetching items for report:', req.params.reportId);
     const [rows] = await pool.query('SELECT * FROM report_items WHERE reportId = ? ORDER BY createdAt ASC', [req.params.reportId]);
+    console.log(`Found ${Array.isArray(rows) ? rows.length : 0} items`);
     res.json(rows);
   } catch (error) {
+    console.error('Error fetching report items:', error);
     res.status(500).json({ error: 'Failed to fetch report items' });
   }
 });

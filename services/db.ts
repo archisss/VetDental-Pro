@@ -85,7 +85,12 @@ export const DB = {
     try {
       const res = await fetch(`${API_BASE}/reports/${reportId}/items`);
       const data = await res.json();
-      return Array.isArray(data) ? data : [];
+      const items = Array.isArray(data) ? data : [];
+      // Ensure boolean values for frontend
+      return items.map((item: any) => ({
+        ...item,
+        isMirrored: !!item.isMirrored
+      }));
     } catch (e) {
       console.error('Error fetching report items:', e);
       return [];
