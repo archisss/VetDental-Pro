@@ -254,7 +254,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             <div class="text-block">${clinicalHistory}</div>
           ` : ''}
 
-          <div class="section-title">Evidencia y Hallazgos Visuales</div>
+          <div class="section-title">Imágenes y Hallazgos Visuales</div>
           <div class="gallery">
             ${reportItems.map((item, i) => `
               <div class="gallery-item">
@@ -262,7 +262,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                   <img src="${item.imageData}" style="transform: rotate(${item.rotation}deg) scaleX(${item.isMirrored ? -1 : 1})">
                 </div>
                 <div class="description">
-                  <div class="label" style="margin-bottom: 2px; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px;">Evidencia #${i + 1}</div>
+                  <div class="label" style="margin-bottom: 2px; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px;">IMAGEN #${i + 1}</div>
                   ${item.description || 'Sin descripción técnica.'}
                 </div>
               </div>
@@ -414,7 +414,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                 <ImagePlus className="w-5 h-5 text-indigo-500" />
-                {editingItemId ? 'Editar Evidencia' : 'Agregar Nueva Evidencia'}
+                {editingItemId ? 'Editar Imagen' : 'Agregar Nueva Imagen'}
               </h3>
               {editingItemId && (
                 <button
@@ -492,7 +492,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
               className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg"
             >
               <Save className="w-5 h-5" />
-              {editingItemId ? 'Guardar Cambios' : 'Añadir Hallazgo al Reporte'}
+              {editingItemId ? 'Guardar Cambios' : 'Añadir Imagen al Reporte'}
             </button>
           </div>
 
@@ -527,7 +527,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
 
         <div className="space-y-4">
           <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 uppercase text-xs tracking-wider">
-            Evidencias Acumuladas
+            Imágenes Acumuladas
             <span className="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full text-xs font-bold">{reportItems.length}</span>
           </h3>
           <div className="grid grid-cols-1 gap-4 overflow-y-auto max-h-[1200px] pr-2">
@@ -544,7 +544,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                 </div>
                 <div className="flex-1 space-y-2">
                   <div className="flex justify-between items-start">
-                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded">ITEM #{index + 1}</span>
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded">IMAGEN #{index + 1}</span>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEditItem(item)}
@@ -569,7 +569,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             {reportItems.length === 0 && (
               <div className="h-64 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
                 <FileText className="w-12 h-12 mb-2 opacity-10" />
-                <p className="text-sm">Aún no hay evidencias guardadas</p>
+                <p className="text-sm">Aún no hay imágenes guardadas</p>
               </div>
             )}
           </div>

@@ -76,9 +76,17 @@ async function initDB() {
         description TEXT,
         rotation INT DEFAULT 0,
         isMirrored TINYINT(1) DEFAULT 0,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (reportId) REFERENCES reports(id) ON DELETE CASCADE
       )
     `);
+
+    // Ensure createdAt exists if table was created before
+    try {
+      await connection.query('ALTER TABLE report_items ADD COLUMN IF NOT EXISTS createdAt DATETIME DEFAULT CURRENT_TIMESTAMP');
+    } catch (e) {
+      // Ignore if column already exists or IF NOT EXISTS is not supported
+    }
 
     await connection.query(`
       CREATE TABLE IF NOT EXISTS appointments (
@@ -174,7 +182,7 @@ app.post('/api/reports', async (req, res) => {
 // Report Items
 app.get('/api/reports/:reportId/items', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM report_items WHERE reportId = ?', [req.params.reportId]);
+    const [rows] = await pool.query('SELECT * FROM report_items WHERE reportId = ? ORDER BY createdAt ASC', [req.params.reportId]);
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch report items' });

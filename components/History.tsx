@@ -114,7 +114,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
             <div class="text-block">${report.clinicalHistory}</div>
           ` : ''}
 
-          <div class="section-title">Evidencia y Hallazgos Visuales</div>
+          <div class="section-title">Imágenes y Hallazgos Visuales</div>
           <div class="gallery">
             ${reportItems.map((item, i) => `
               <div class="gallery-item">
@@ -122,7 +122,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
                   <img src="${item.imageData}" style="transform: rotate(${item.rotation}deg) scaleX(${item.isMirrored ? -1 : 1})">
                 </div>
                 <div class="description">
-                  <div class="label" style="margin-bottom: 2px; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px;">Evidencia #${i + 1}</div>
+                  <div class="label" style="margin-bottom: 2px; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px;">IMAGEN #${i + 1}</div>
                   ${item.description || 'Sin descripción técnica.'}
                 </div>
               </div>
