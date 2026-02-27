@@ -35,7 +35,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   // Current Item Form
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [currentDescription, setCurrentDescription] = useState('');
-  const [selectedDescriptionOption, setSelectedDescriptionOption] = useState<string>('');
+  const [selectedDescriptionOptions, setSelectedDescriptionOptions] = useState<string[]>([]);
   const [rotation, setRotation] = useState(0);
   const [isMirrored, setIsMirrored] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -213,10 +213,18 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
       await DB.saveReport(reportToSave);
       setCurrentReport(reportToSave);
 
+      // Combine selected options and custom description
+      const descriptions = [...selectedDescriptionOptions.filter(opt => opt !== 'Otro')];
+      if (selectedDescriptionOptions.includes('Otro') && currentDescription.trim()) {
+        descriptions.push(currentDescription.trim());
+      }
+      
+      const finalDescription = descriptions.join(' | ');
+
       const itemData = {
         reportId: currentReport.id,
         imageData: finalImageData,
-        description: selectedDescriptionOption === 'Otro' ? currentDescription : selectedDescriptionOption,
+        description: finalDescription,
         rotation: 0, // Reset rotation/mirror as they are now baked into the image
         isMirrored: false
       };
@@ -234,7 +242,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
       
       setCurrentImage(null);
       setCurrentDescription('');
-      setSelectedDescriptionOption('');
+      setSelectedDescriptionOptions([]);
       setRotation(0);
       setIsMirrored(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -248,18 +256,23 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     setEditingItemId(item.id);
     setCurrentImage(item.imageData);
     
-    // Detect if description matches any predefined option
-    const matchedOption = DESCRIPTION_OPTIONS.find(opt => 
-      opt.label !== 'Otro' && opt.label !== 'Seleccione una opción...' && item.description === opt.label
-    );
+    // Parse description back into checkboxes
+    const parts = item.description.split(' | ');
+    const selected: string[] = [];
+    let customDesc = '';
     
-    if (matchedOption) {
-      setSelectedDescriptionOption(matchedOption.label);
-      setCurrentDescription('');
-    } else {
-      setSelectedDescriptionOption('Otro');
-      setCurrentDescription(item.description);
-    }
+    parts.forEach(part => {
+      const isPredefined = DESCRIPTION_OPTIONS.some(opt => opt.label === part && opt.label !== 'Otro');
+      if (isPredefined) {
+        selected.push(part);
+      } else {
+        if (!selected.includes('Otro')) selected.push('Otro');
+        customDesc = customDesc ? `${customDesc}\n${part}` : part;
+      }
+    });
+    
+    setSelectedDescriptionOptions(selected);
+    setCurrentDescription(customDesc);
     
     setRotation(item.rotation);
     setIsMirrored(item.isMirrored);
@@ -274,7 +287,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
         setEditingItemId(null);
         setCurrentImage(null);
         setCurrentDescription('');
-        setSelectedDescriptionOption('');
+        setSelectedDescriptionOptions([]);
         setRotation(0);
         setIsMirrored(false);
       }
@@ -286,7 +299,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     setEditingItemId(null);
     setCurrentImage(null);
     setCurrentDescription('');
-    setSelectedDescriptionOption('');
+    setSelectedDescriptionOptions([]);
     setRotation(0);
     setIsMirrored(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -655,10 +668,10 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                         key={c.color}
                         onClick={() => {
                           setSelectedColor(selectedColor === c.color ? null : c.color);
-                          // Auto-select description option based on color
+                          // Auto-select description option based on color (add to array if not present)
                           const matchedOption = DESCRIPTION_OPTIONS.find(opt => opt.color === c.color);
-                          if (matchedOption) {
-                            setSelectedDescriptionOption(matchedOption.label);
+                          if (matchedOption && !selectedDescriptionOptions.includes(matchedOption.label)) {
+                            setSelectedDescriptionOptions(prev => [...prev, matchedOption.label]);
                           }
                         }}
                         className={`w-10 h-10 rounded-full border-4 transition-all ${
@@ -700,24 +713,47 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             )}
 
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Hallazgo Radiográfico</label>
-                <select
-                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white transition-all"
-                  value={selectedDescriptionOption}
-                  onChange={e => setSelectedDescriptionOption(e.target.value)}
-                >
-                  <option value="">Seleccione una opción...</option>
-                  {DESCRIPTION_OPTIONS.filter(opt => opt.label !== 'Otro').map(opt => (
-                    <option key={opt.label} value={opt.label}>
-                      {opt.label}
-                    </option>
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Hallazgos Radiográficos</label>
+                <div className="grid grid-cols-1 gap-3">
+                  {DESCRIPTION_OPTIONS.map((opt) => (
+                    <label 
+                      key={opt.label} 
+                      className={`flex items-start gap-3 p-4 rounded-2xl border transition-all cursor-pointer ${
+                        selectedDescriptionOptions.includes(opt.label)
+                        ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-1 w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        checked={selectedDescriptionOptions.includes(opt.label)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedDescriptionOptions(prev => [...prev, opt.label]);
+                          } else {
+                            setSelectedDescriptionOptions(prev => prev.filter(item => item !== opt.label));
+                          }
+                        }}
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm font-medium text-slate-900 dark:text-white leading-tight">
+                          {opt.label}
+                        </span>
+                        {opt.color && (
+                          <div 
+                            className="w-3 h-3 rounded-full mt-1" 
+                            style={{ backgroundColor: opt.color }}
+                          />
+                        )}
+                      </div>
+                    </label>
                   ))}
-                  <option value="Otro">Otro</option>
-                </select>
+                </div>
               </div>
 
-              {selectedDescriptionOption === 'Otro' && (
+              {selectedDescriptionOptions.includes('Otro') && (
                 <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Descripción Personalizada</label>
                   <textarea
