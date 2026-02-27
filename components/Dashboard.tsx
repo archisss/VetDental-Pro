@@ -104,7 +104,7 @@ const Dashboard: React.FC<DashboardProps> = ({ currentTheme, onThemeChange }) =>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6 transition-all">
-          <h3 className="text-xl font-bold text-slate-800 dark:text-white">Próximas Citas Dentales</h3>
+          <h3 className="text-xl font-bold text-slate-800 dark:text-white">Próximas Citas Odontológicas</h3>
           <div className="space-y-4">
             {appointments.length > 0 ? (
               appointments.map(app => (

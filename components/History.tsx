@@ -36,7 +36,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
       <html lang="es">
       <head>
         <meta charset="UTF-8">
-        <title>Reporte Dental - ${selectedPet.name}</title>
+        <title>Reporte Odontológico - ${selectedPet.name}</title>
         <style>
           @page { margin: 10mm; }
           body { font-family: 'Inter', 'Segoe UI', sans-serif; padding: 0; color: #1e293b; line-height: 1.4; font-size: 11pt; }
@@ -46,7 +46,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
           .header h1 { margin: 0; color: #4f46e5; font-size: 18pt; font-weight: 800; letter-spacing: -0.5px; }
           .header-meta { text-align: right; color: #64748b; font-size: 8.5pt; }
           
-          .pet-info { margin-bottom: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border: 1px solid #e2e8f0; }
+          .pet-info { margin-bottom: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; display: grid; grid-template-columns: 1fr; gap: 12px; border: 1px solid #e2e8f0; }
           .pet-info div { display: flex; flex-direction: column; }
           
           .section-title { font-size: 9.5pt; font-weight: bold; color: #4f46e5; margin: 10px 0 4px 0; border-left: 3px solid #4f46e5; padding-left: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -88,7 +88,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
           <div class="header">
             <div>
               <h1>VetDental Pro</h1>
-              <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Clínico Odontológico Especializado</p>
+              <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Odontológico Completo</p>
             </div>
             <div class="header-meta">
               <p>${new Date(report.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
@@ -99,13 +99,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
             <div>
               <span class="label">Paciente</span>
               <span class="value">${selectedPet.name}</span>
-              <span style="font-size: 8.5pt; color: #64748b;">${selectedPet.type} | ${selectedPet.breed} | Cráneo: ${selectedPet.skullType}</span>
-            </div>
-            <div>
-              <span class="label">Clínica Veterinaria</span>
-              <span class="value">${selectedPet.clinicName}</span>
-              <span class="label" style="margin-top: 3px">Edad</span>
-              <span class="value">${selectedPet.age} años</span>
+              <span style="font-size: 8.5pt; color: #64748b;">${selectedPet.type} | ${selectedPet.breed} | Cráneo: ${selectedPet.skullType} | Edad: ${selectedPet.age} años</span>
             </div>
           </div>
 
@@ -122,7 +116,6 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
                   <img src="${item.imageData}" style="transform: rotate(${item.rotation}deg) scaleX(${item.isMirrored ? -1 : 1})">
                 </div>
                 <div class="description">
-                  <div class="label" style="margin-bottom: 2px; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px;">IMAGEN #${i + 1}</div>
                   ${item.description || 'Sin descripción técnica.'}
                 </div>
               </div>

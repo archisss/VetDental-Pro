@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DB } from '../services/db';
 import { Pet, DentalReport, ReportItem } from '../types';
-import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser } from 'lucide-react';
+import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser, Search } from 'lucide-react';
 
 interface ReportBuilderProps {
   reportId?: string | null;
@@ -12,6 +12,8 @@ interface ReportBuilderProps {
 const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetId, setSelectedPetId] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [currentReport, setCurrentReport] = useState<DentalReport | null>(null);
   const [reportItems, setReportItems] = useState<ReportItem[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -290,7 +292,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
       <html lang="es">
       <head>
         <meta charset="UTF-8">
-        <title>Reporte Dental - ${pet?.name}</title>
+        <title>Reporte Odontológico - ${pet?.name}</title>
         <style>
           @page { margin: 10mm; }
           body { font-family: 'Inter', 'Segoe UI', sans-serif; padding: 0; color: #1e293b; line-height: 1.4; font-size: 11pt; }
@@ -300,7 +302,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
           .header h1 { margin: 0; color: #4f46e5; font-size: 18pt; font-weight: 800; letter-spacing: -0.5px; }
           .header-meta { text-align: right; color: #64748b; font-size: 8.5pt; }
           
-          .pet-info { margin-bottom: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border: 1px solid #e2e8f0; }
+          .pet-info { margin-bottom: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; display: grid; grid-template-columns: 1fr; gap: 12px; border: 1px solid #e2e8f0; }
           .pet-info div { display: flex; flex-direction: column; }
           
           .section-title { font-size: 9.5pt; font-weight: bold; color: #4f46e5; margin: 10px 0 4px 0; border-left: 3px solid #4f46e5; padding-left: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -342,7 +344,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
           <div class="header">
             <div>
               <h1>VetDental Pro</h1>
-              <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Clínico Odontológico Especializado</p>
+              <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Odontológico Completo</p>
             </div>
             <div class="header-meta">
               <p>${new Date(currentReport.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
@@ -353,13 +355,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             <div>
               <span class="label">Paciente</span>
               <span class="value">${pet?.name}</span>
-              <span style="font-size: 8.5pt; color: #64748b;">${pet?.type} | ${pet?.breed} | Cráneo: ${pet?.skullType}</span>
-            </div>
-            <div>
-              <span class="label">Clínica Veterinaria</span>
-              <span class="value">${pet?.clinicName}</span>
-              <span class="label" style="margin-top: 3px">Edad</span>
-              <span class="value">${pet?.age} años</span>
+              <span style="font-size: 8.5pt; color: #64748b;">${pet?.type} | ${pet?.breed} | Cráneo: ${pet?.skullType} | Edad: ${pet?.age} años</span>
             </div>
           </div>
 
@@ -376,7 +372,6 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                   <img src="${item.imageData}" style="transform: rotate(${item.rotation}deg) scaleX(${item.isMirrored ? -1 : 1})">
                 </div>
                 <div class="description">
-                  <div class="label" style="margin-bottom: 2px; border-bottom: 1px solid #f1f5f9; padding-bottom: 2px;">IMAGEN #${i + 1}</div>
                   ${item.description || 'Sin descripción técnica.'}
                 </div>
               </div>
@@ -409,9 +404,10 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
         </div>
         <script>
           window.onload = () => {
-            setTimeout(() => {
-              window.print();
-            }, 500);
+            // Auto-print disabled as per request
+            // setTimeout(() => {
+            //   window.print();
+            // }, 500);
           };
         </script>
       </body>
@@ -432,20 +428,52 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-700 space-y-6 transition-all">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Seleccionar Animal / Paciente</label>
-            <select
-              className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-lg text-slate-900 dark:text-white transition-all"
-              value={selectedPetId}
-              onChange={e => setSelectedPetId(e.target.value)}
-            >
-              <option value="" className="text-slate-500 dark:text-slate-600">-- Elige un paciente --</option>
-              {pets.map(pet => (
-                <option key={pet.id} value={pet.id} className="text-slate-900 dark:text-slate-100">
-                  {pet.name} ({pet.clinicName}) - {pet.type}
-                </option>
-              ))}
-            </select>
+          <div className="space-y-2 relative">
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Buscar Paciente</label>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Escribe el nombre del paciente o clínica..."
+                className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-lg text-slate-900 dark:text-white transition-all"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setIsSearchOpen(true);
+                }}
+                onFocus={() => setIsSearchOpen(true)}
+              />
+            </div>
+            
+            {isSearchOpen && searchTerm && (
+              <div className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl max-h-60 overflow-y-auto overflow-x-hidden">
+                {pets
+                  .filter(p => 
+                    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                    p.clinicName.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map(pet => (
+                    <button
+                      key={pet.id}
+                      onClick={() => {
+                        setSelectedPetId(pet.id);
+                        setSearchTerm(`${pet.name} (${pet.clinicName})`);
+                        setIsSearchOpen(false);
+                      }}
+                      className="w-full text-left px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-b border-slate-100 dark:border-slate-700 last:border-0"
+                    >
+                      <p className="font-bold text-slate-900 dark:text-white">{pet.name}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">{pet.clinicName} - {pet.type}</p>
+                    </button>
+                  ))}
+                {pets.filter(p => 
+                  p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                  p.clinicName.toLowerCase().includes(searchTerm.toLowerCase())
+                ).length === 0 && (
+                  <div className="px-6 py-4 text-slate-500 text-center italic">No se encontraron pacientes</div>
+                )}
+              </div>
+            )}
           </div>
 
           <button
@@ -481,7 +509,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reporte Dental: {selectedPet?.name}</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reporte Odontológico: {selectedPet?.name}</h2>
             <p className="text-slate-500 dark:text-slate-400">Clínica: {selectedPet?.clinicName} | {new Date(currentReport.date).toLocaleDateString()}</p>
           </div>
         </div>
@@ -503,7 +531,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             className="bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-2 rounded-xl font-bold hover:bg-slate-900 dark:hover:bg-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
           >
             <Eye className="w-4 h-4" />
-            Vista Previa (Imprimir)
+            Vista Previa
           </button>
         </div>
       </div>
