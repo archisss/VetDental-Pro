@@ -9,6 +9,14 @@ interface ReportBuilderProps {
   onClose?: () => void;
 }
 
+const DESCRIPTION_OPTIONS = [
+  { label: 'Reabsorción ósea exponiendo raíces de', color: '#ef4444' },
+  { label: 'Reabsorción dental en raíz mesial de', color: '#f97316' },
+  { label: 'Aumento de espacio ligamental en raíces de', color: '#eab308' },
+  { label: 'sin alteraciones radiográficas aparentes anquilosis de raíz en', color: '#22c55e' },
+  { label: 'Otro', color: null }
+];
+
 const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetId, setSelectedPetId] = useState('');
@@ -27,6 +35,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   // Current Item Form
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [currentDescription, setCurrentDescription] = useState('');
+  const [selectedDescriptionOption, setSelectedDescriptionOption] = useState<string>('');
   const [rotation, setRotation] = useState(0);
   const [isMirrored, setIsMirrored] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -207,7 +216,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
       const itemData = {
         reportId: currentReport.id,
         imageData: finalImageData,
-        description: currentDescription,
+        description: selectedDescriptionOption === 'Otro' ? currentDescription : selectedDescriptionOption,
         rotation: 0, // Reset rotation/mirror as they are now baked into the image
         isMirrored: false
       };
@@ -225,6 +234,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
       
       setCurrentImage(null);
       setCurrentDescription('');
+      setSelectedDescriptionOption('');
       setRotation(0);
       setIsMirrored(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -237,7 +247,20 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   const handleEditItem = (item: ReportItem) => {
     setEditingItemId(item.id);
     setCurrentImage(item.imageData);
-    setCurrentDescription(item.description);
+    
+    // Detect if description matches any predefined option
+    const matchedOption = DESCRIPTION_OPTIONS.find(opt => 
+      opt.label !== 'Otro' && opt.label !== 'Seleccione una opción...' && item.description === opt.label
+    );
+    
+    if (matchedOption) {
+      setSelectedDescriptionOption(matchedOption.label);
+      setCurrentDescription('');
+    } else {
+      setSelectedDescriptionOption('Otro');
+      setCurrentDescription(item.description);
+    }
+    
     setRotation(item.rotation);
     setIsMirrored(item.isMirrored);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -251,6 +274,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
         setEditingItemId(null);
         setCurrentImage(null);
         setCurrentDescription('');
+        setSelectedDescriptionOption('');
         setRotation(0);
         setIsMirrored(false);
       }
@@ -262,6 +286,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     setEditingItemId(null);
     setCurrentImage(null);
     setCurrentDescription('');
+    setSelectedDescriptionOption('');
     setRotation(0);
     setIsMirrored(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -628,7 +653,14 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                     ].map((c) => (
                       <button
                         key={c.color}
-                        onClick={() => setSelectedColor(selectedColor === c.color ? null : c.color)}
+                        onClick={() => {
+                          setSelectedColor(selectedColor === c.color ? null : c.color);
+                          // Auto-select description option based on color
+                          const matchedOption = DESCRIPTION_OPTIONS.find(opt => opt.color === c.color);
+                          if (matchedOption) {
+                            setSelectedDescriptionOption(matchedOption.label);
+                          }
+                        }}
                         className={`w-10 h-10 rounded-full border-4 transition-all ${
                           selectedColor === c.color ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105'
                         }`}
@@ -667,14 +699,35 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
               </div>
             )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Descripción Médica del Hallazgo</label>
-              <textarea
-                placeholder="Describa el hallazgo dental para el dueño de la mascota..."
-                className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
-                value={currentDescription}
-                onChange={e => setCurrentDescription(e.target.value)}
-              />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Hallazgo Radiográfico</label>
+                <select
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white transition-all"
+                  value={selectedDescriptionOption}
+                  onChange={e => setSelectedDescriptionOption(e.target.value)}
+                >
+                  <option value="">Seleccione una opción...</option>
+                  {DESCRIPTION_OPTIONS.filter(opt => opt.label !== 'Otro').map(opt => (
+                    <option key={opt.label} value={opt.label}>
+                      {opt.label}
+                    </option>
+                  ))}
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+
+              {selectedDescriptionOption === 'Otro' && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Descripción Personalizada</label>
+                  <textarea
+                    placeholder="Describa el hallazgo dental para el dueño de la mascota..."
+                    className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
+                    value={currentDescription}
+                    onChange={e => setCurrentDescription(e.target.value)}
+                  />
+                </div>
+              )}
             </div>
 
             <button
