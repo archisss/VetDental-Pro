@@ -1,18 +1,27 @@
 
 export enum PetType {
-  DOG = 'Perro',
-  CAT = 'Gato',
+  CANINE = 'Canino',
+  FELINE = 'Felino',
+  RODENT = 'Roedor',
+  PRIMATE = 'Primate',
+  BIRD = 'Ave',
   OTHER = 'Otro'
+}
+
+export enum SkullType {
+  MESOCEPHALIC = 'Mesocefálico',
+  BRACHYCEPHALIC = 'Braquicefálico',
+  DOLICHOCEPHALIC = 'Dolicoefálico'
 }
 
 export interface Pet {
   id: string;
-  ownerName: string;
+  clinicName: string; // Formerly ownerName
   name: string;
   breed: string;
   age: number;
   type: PetType;
-  medicalNotes: string;
+  skullType: SkullType;
   createdAt: string;
 }
 
@@ -39,7 +48,7 @@ export interface Appointment {
   id: string;
   petId: string;
   petName: string;
-  ownerName: string;
+  clinicName: string;
   date: string;
   time: string;
   service: string;

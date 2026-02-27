@@ -59,7 +59,7 @@ const AppointmentManagement: React.FC = () => {
     const appointmentData: any = {
       ...formData,
       petName: selectedPet.name,
-      ownerName: selectedPet.ownerName
+      clinicName: selectedPet.clinicName
     };
 
     if (editingId) {
@@ -123,7 +123,7 @@ const AppointmentManagement: React.FC = () => {
               >
                 <option value="">-- Elige un paciente --</option>
                 {pets.map(pet => (
-                  <option key={pet.id} value={pet.id}>{pet.name} ({pet.ownerName})</option>
+                  <option key={pet.id} value={pet.id}>{pet.name} ({pet.clinicName})</option>
                 ))}
               </select>
             </div>
@@ -190,7 +190,7 @@ const AppointmentManagement: React.FC = () => {
                     <CalendarDays className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white">{app.petName} <span className="text-slate-400 dark:text-slate-500 font-normal">({app.ownerName})</span></h4>
+                    <h4 className="font-bold text-slate-900 dark:text-white">{app.petName} <span className="text-slate-400 dark:text-slate-500 font-normal">({app.clinicName})</span></h4>
                     <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
                       <Clock className="w-3 h-3" /> {new Date(app.date).toLocaleDateString()} - {app.time}
                     </p>

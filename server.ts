@@ -49,8 +49,8 @@ async function initDB() {
         type VARCHAR(50) NOT NULL,
         breed VARCHAR(255),
         age INT,
-        ownerName VARCHAR(255) NOT NULL,
-        medicalNotes TEXT,
+        clinicName VARCHAR(255) NOT NULL,
+        skullType VARCHAR(50),
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -81,15 +81,23 @@ async function initDB() {
       )
     `);
 
-    // Ensure createdAt exists if table was created before
+    // Migrations for pets table
     try {
-      const [columns]: any = await connection.query('SHOW COLUMNS FROM report_items LIKE "createdAt"');
-      if (columns.length === 0) {
-        console.log('Adding createdAt column to report_items');
-        await connection.query('ALTER TABLE report_items ADD COLUMN createdAt DATETIME DEFAULT CURRENT_TIMESTAMP');
+      // Check if ownerName exists and rename to clinicName
+      const [ownerCols]: any = await connection.query('SHOW COLUMNS FROM pets LIKE "ownerName"');
+      if (ownerCols.length > 0) {
+        console.log('Renaming ownerName to clinicName in pets');
+        await connection.query('ALTER TABLE pets CHANGE ownerName clinicName VARCHAR(255) NOT NULL');
+      }
+      
+      // Check if skullType exists
+      const [skullCols]: any = await connection.query('SHOW COLUMNS FROM pets LIKE "skullType"');
+      if (skullCols.length === 0) {
+        console.log('Adding skullType column to pets');
+        await connection.query('ALTER TABLE pets ADD COLUMN skullType VARCHAR(50)');
       }
     } catch (e) {
-      console.error('Error checking/adding createdAt column:', e);
+      console.error('Error migrating pets table:', e);
     }
 
     await connection.query(`
@@ -97,7 +105,7 @@ async function initDB() {
         id VARCHAR(36) PRIMARY KEY,
         petId VARCHAR(36) NOT NULL,
         petName VARCHAR(255),
-        ownerName VARCHAR(255),
+        clinicName VARCHAR(255),
         date VARCHAR(255) NOT NULL,
         time VARCHAR(50),
         service VARCHAR(255),
@@ -105,6 +113,17 @@ async function initDB() {
         FOREIGN KEY (petId) REFERENCES pets(id) ON DELETE CASCADE
       )
     `);
+
+    // Migration for appointments table
+    try {
+      const [ownerColsApp]: any = await connection.query('SHOW COLUMNS FROM appointments LIKE "ownerName"');
+      if (ownerColsApp.length > 0) {
+        console.log('Renaming ownerName to clinicName in appointments');
+        await connection.query('ALTER TABLE appointments CHANGE ownerName clinicName VARCHAR(255)');
+      }
+    } catch (e) {
+      console.error('Error migrating appointments table:', e);
+    }
 
     connection.release();
     console.log('Database tables initialized');
@@ -128,13 +147,14 @@ app.get('/api/pets', async (req, res) => {
 
 app.post('/api/pets', async (req, res) => {
   try {
-    const { id, name, type, breed, age, ownerName, medicalNotes } = req.body;
+    const { id, name, type, breed, age, clinicName, skullType } = req.body;
     await pool.query(
-      'INSERT INTO pets (id, name, type, breed, age, ownerName, medicalNotes) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [id, name, type, breed, age, ownerName, medicalNotes]
+      'INSERT INTO pets (id, name, type, breed, age, clinicName, skullType) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, name, type, breed, age, clinicName, skullType]
     );
     res.status(201).json(req.body);
   } catch (error) {
+    console.error('Error saving pet:', error);
     res.status(500).json({ error: 'Failed to save pet' });
   }
 });
@@ -235,13 +255,14 @@ app.get('/api/appointments', async (req, res) => {
 
 app.post('/api/appointments', async (req, res) => {
   try {
-    const { id, petId, petName, ownerName, date, time, service, status } = req.body;
+    const { id, petId, petName, clinicName, date, time, service, status } = req.body;
     await pool.query(
-      'INSERT INTO appointments (id, petId, petName, ownerName, date, time, service, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date=?, time=?, service=?, status=?',
-      [id, petId, petName, ownerName, date, time, service, status, date, time, service, status]
+      'INSERT INTO appointments (id, petId, petName, clinicName, date, time, service, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date=?, time=?, service=?, status=?',
+      [id, petId, petName, clinicName, date, time, service, status, date, time, service, status]
     );
     res.status(201).json(req.body);
   } catch (error) {
+    console.error('Error saving appointment:', error);
     res.status(500).json({ error: 'Failed to save appointment' });
   }
 });

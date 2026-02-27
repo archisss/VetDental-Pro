@@ -353,11 +353,11 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             <div>
               <span class="label">Paciente</span>
               <span class="value">${pet?.name}</span>
-              <span style="font-size: 8.5pt; color: #64748b;">${pet?.type} | ${pet?.breed}</span>
+              <span style="font-size: 8.5pt; color: #64748b;">${pet?.type} | ${pet?.breed} | Cráneo: ${pet?.skullType}</span>
             </div>
             <div>
-              <span class="label">Propietario</span>
-              <span class="value">${pet?.ownerName}</span>
+              <span class="label">Clínica Veterinaria</span>
+              <span class="value">${pet?.clinicName}</span>
               <span class="label" style="margin-top: 3px">Edad</span>
               <span class="value">${pet?.age} años</span>
             </div>
@@ -442,7 +442,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
               <option value="" className="text-slate-500 dark:text-slate-600">-- Elige un paciente --</option>
               {pets.map(pet => (
                 <option key={pet.id} value={pet.id} className="text-slate-900 dark:text-slate-100">
-                  {pet.name} ({pet.ownerName}) - {pet.type}
+                  {pet.name} ({pet.clinicName}) - {pet.type}
                 </option>
               ))}
             </select>
@@ -482,7 +482,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
           </button>
           <div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reporte Dental: {selectedPet?.name}</h2>
-            <p className="text-slate-500 dark:text-slate-400">Dueño: {selectedPet?.ownerName} | {new Date(currentReport.date).toLocaleDateString()}</p>
+            <p className="text-slate-500 dark:text-slate-400">Clínica: {selectedPet?.clinicName} | {new Date(currentReport.date).toLocaleDateString()}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">

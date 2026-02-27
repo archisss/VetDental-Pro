@@ -99,11 +99,11 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
             <div>
               <span class="label">Paciente</span>
               <span class="value">${selectedPet.name}</span>
-              <span style="font-size: 8.5pt; color: #64748b;">${selectedPet.type} | ${selectedPet.breed}</span>
+              <span style="font-size: 8.5pt; color: #64748b;">${selectedPet.type} | ${selectedPet.breed} | Cráneo: ${selectedPet.skullType}</span>
             </div>
             <div>
-              <span class="label">Propietario</span>
-              <span class="value">${selectedPet.ownerName}</span>
+              <span class="label">Clínica Veterinaria</span>
+              <span class="value">${selectedPet.clinicName}</span>
               <span class="label" style="margin-top: 3px">Edad</span>
               <span class="value">${selectedPet.age} años</span>
             </div>
@@ -188,7 +188,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
               >
                 <div className="text-left">
                   <p className={`font-bold transition-colors ${selectedPet?.id === pet.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'}`}>{pet.name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{pet.ownerName} - {pet.type}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{pet.clinicName} - {pet.type}</p>
                 </div>
                 <ChevronRight className={`w-4 h-4 transition-colors ${selectedPet?.id === pet.id ? 'text-indigo-500' : 'text-slate-300 dark:text-slate-600'}`} />
               </button>
