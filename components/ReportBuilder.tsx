@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DB } from '../services/db';
 import { Pet, DentalReport, ReportItem } from '../types';
-import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X } from 'lucide-react';
+import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser } from 'lucide-react';
 
 interface ReportBuilderProps {
   reportId?: string | null;
@@ -28,6 +28,13 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   const [rotation, setRotation] = useState(0);
   const [isMirrored, setIsMirrored] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  
+  // Drawing states
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,11 +74,82 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setCurrentImage(reader.result as string);
+        const result = reader.result as string;
+        setCurrentImage(result);
         setRotation(0);
         setIsMirrored(false);
+        
+        // Calculate aspect ratio
+        const img = new Image();
+        img.onload = () => {
+          setImageAspectRatio(img.width / img.height);
+        };
+        img.src = result;
+
+        // Clear canvas when new image is loaded
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          ctx?.clearRect(0, 0, canvas.width, canvas.height);
+        }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Drawing Logic
+  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!selectedColor) return;
+    setIsDrawing(true);
+    draw(e);
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx?.beginPath();
+    }
+  };
+
+  const draw = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDrawing || !selectedColor || !canvasRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    let x, y;
+
+    if ('touches' in e) {
+      x = e.touches[0].clientX - rect.left;
+      y = e.touches[0].clientY - rect.top;
+    } else {
+      x = (e as React.MouseEvent).clientX - rect.left;
+      y = (e as React.MouseEvent).clientY - rect.top;
+    }
+
+    // Scale coordinates to canvas resolution
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = selectedColor;
+
+    ctx.lineTo(x * scaleX, y * scaleY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x * scaleX, y * scaleY);
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
     }
   };
 
@@ -79,6 +157,42 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     if (!currentReport || !currentImage) return;
 
     try {
+      // Combine image and drawings if there are any
+      let finalImageData = currentImage;
+      const canvas = canvasRef.current;
+      
+      if (canvas) {
+        // Create a temporary canvas to merge image and drawings
+        const tempCanvas = document.createElement('canvas');
+        const img = new Image();
+        
+        await new Promise((resolve) => {
+          img.onload = resolve;
+          img.src = currentImage;
+        });
+
+        const isVertical = rotation === 90 || rotation === 270;
+        tempCanvas.width = isVertical ? img.height : img.width;
+        tempCanvas.height = isVertical ? img.width : img.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        if (tempCtx) {
+          // 1. Draw the original image with transformations
+          tempCtx.save();
+          tempCtx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+          tempCtx.rotate((rotation * Math.PI) / 180);
+          tempCtx.scale(isMirrored ? -1 : 1, 1);
+          tempCtx.drawImage(img, -img.width / 2, -img.height / 2);
+          tempCtx.restore();
+
+          // 2. Draw the annotations on top
+          // We need to scale the annotations from the UI canvas to the original image size
+          tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
+          
+          finalImageData = tempCanvas.toDataURL('image/jpeg', 0.8);
+        }
+      }
+
       const reportToSave = {
         ...currentReport,
         clinicalHistory,
@@ -90,10 +204,10 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
 
       const itemData = {
         reportId: currentReport.id,
-        imageData: currentImage,
+        imageData: finalImageData,
         description: currentDescription,
-        rotation,
-        isMirrored
+        rotation: 0, // Reset rotation/mirror as they are now baked into the image
+        isMirrored: false
       };
 
       if (editingItemId) {
@@ -428,20 +542,37 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             </div>
             
             <div 
-              className={`relative border-2 border-dashed rounded-2xl aspect-video flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
-                currentImage ? 'border-indigo-400 dark:border-indigo-500 bg-slate-900' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-900/80'
+              ref={containerRef}
+              className={`relative border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
+                currentImage ? 'border-indigo-400 dark:border-indigo-500 bg-slate-900' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-900/80 aspect-video'
               }`}
-              onClick={() => fileInputRef.current?.click()}
+              style={currentImage && imageAspectRatio ? { aspectRatio: `${imageAspectRatio}` } : {}}
+              onClick={() => !currentImage && fileInputRef.current?.click()}
             >
               {currentImage ? (
-                <img
-                  src={currentImage}
-                  alt="Previsualización"
-                  className="w-full h-full object-contain transition-transform duration-300"
-                  style={{
-                    transform: `rotate(${rotation}deg) scaleX(${isMirrored ? -1 : 1})`
-                  }}
-                />
+                <>
+                  <img
+                    src={currentImage}
+                    alt="Previsualización"
+                    className="w-full h-full object-contain transition-transform duration-300"
+                    style={{
+                      transform: `rotate(${rotation}deg) scaleX(${isMirrored ? -1 : 1})`
+                    }}
+                  />
+                  <canvas
+                    ref={canvasRef}
+                    className={`absolute inset-0 w-full h-full ${selectedColor ? 'cursor-crosshair' : 'pointer-events-none'}`}
+                    width={2000} // High resolution
+                    height={2000 / (imageAspectRatio || 1)}
+                    onMouseDown={startDrawing}
+                    onMouseMove={draw}
+                    onMouseUp={stopDrawing}
+                    onMouseLeave={stopDrawing}
+                    onTouchStart={startDrawing}
+                    onTouchMove={draw}
+                    onTouchEnd={stopDrawing}
+                  />
+                </>
               ) : (
                 <>
                   <ImagePlus className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-2" />
@@ -458,21 +589,53 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             </div>
 
             {currentImage && (
-              <div className="flex gap-4">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setIsMirrored(!isMirrored); }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors font-medium"
-                >
-                  <FlipHorizontal className="w-4 h-4" />
-                  Efecto Espejo
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setRotation(r => (r + 90) % 360); }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors font-medium"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Girar 90°
-                </button>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-2">
+                    {[
+                      { color: '#ef4444', label: 'Rojo' },
+                      { color: '#f97316', label: 'Naranja' },
+                      { color: '#eab308', label: 'Amarillo' },
+                      { color: '#22c55e', label: 'Verde' }
+                    ].map((c) => (
+                      <button
+                        key={c.color}
+                        onClick={() => setSelectedColor(selectedColor === c.color ? null : c.color)}
+                        className={`w-10 h-10 rounded-full border-4 transition-all ${
+                          selectedColor === c.color ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105'
+                        }`}
+                        style={{ backgroundColor: c.color }}
+                        title={`Dibujar en ${c.label}`}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={clearCanvas}
+                      className="p-2 text-slate-500 hover:text-red-500 transition-colors"
+                      title="Limpiar dibujos"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setIsMirrored(!isMirrored); }}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors font-medium"
+                  >
+                    <FlipHorizontal className="w-4 h-4" />
+                    Efecto Espejo
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setRotation(r => (r + 90) % 360); }}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors font-medium"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Girar 90°
+                  </button>
+                </div>
               </div>
             )}
 
