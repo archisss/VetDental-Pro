@@ -378,34 +378,32 @@ La ausencia bilateral de piezas...`);
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
         <style>
           @page { margin: 10mm; }
-          body { font-family: 'Inter', 'Segoe UI', sans-serif; padding: 0; color: #1e293b; line-height: 1.4; font-size: 11pt; }
-          .container { max-width: 900px; margin: 0 auto; padding: 10px; }
+          body { font-family: 'Inter', 'Segoe UI', sans-serif; padding: 0; color: #1e293b; line-height: 1.4; font-size: 11pt; background: #fff; }
+          .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0; overflow: hidden; }
           
-          .header { border-bottom: 2px solid #4f46e5; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end; }
-          .header h1 { margin: 0; color: #4f46e5; font-size: 18pt; font-weight: 800; letter-spacing: -0.5px; }
+          .header { border-bottom: 2px solid #4f46e5; padding-bottom: 10px; margin-bottom: 15px; }
+          .header h1 { margin: 0; color: #4f46e5; font-size: 20pt; font-weight: 800; }
           .header-meta { text-align: right; color: #64748b; font-size: 8.5pt; }
           
           .pet-info { margin-bottom: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; }
           .pet-info div { display: flex; flex-direction: column; }
           
-          .section-title { font-size: 9.5pt; font-weight: bold; color: #4f46e5; margin: 10px 0 4px 0; border-left: 3px solid #4f46e5; padding-left: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-          .text-block { background: #fff; padding: 6px; border-radius: 6px; border: 1px solid #f1f5f9; margin-bottom: 6px; white-space: pre-wrap; font-size: 9.5pt; color: #334155; }
+          .section-title { font-size: 10pt; font-weight: bold; color: #4f46e5; margin: 15px 0 5px 0; border-left: 4px solid #4f46e5; padding-left: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+          .text-block { background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9; margin-bottom: 10px; white-space: pre-wrap; font-size: 10pt; color: #334155; word-wrap: break-word; overflow-wrap: break-word; }
           
-          .gallery { display: block; width: 100%; margin-top: 5px; }
-          .gallery-row { display: flex; gap: 12px; margin-bottom: 12px; }
-          .gallery-item { width: 48%; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #fff; display: flex; flex-direction: column; page-break-inside: avoid; }
-          .gallery-item.full-width { width: 100%; max-width: 400px; margin: 0 auto; }
+          .gallery { width: 100%; border-collapse: separate; border-spacing: 10px; margin-top: 5px; table-layout: fixed; }
+          .gallery-item { width: 50%; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #fff; vertical-align: top; padding: 0; }
           
-          .img-container { background: #fff; height: 180px; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; }
-          img { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: -webkit-optimize-contrast; }
-          .description { padding: 8px; font-size: 8.5pt; color: #475569; flex-grow: 1; border-top: 1px solid #f1f5f9; }
+          .img-container { background: #fff; height: 220px; display: block; text-align: center; overflow: hidden; position: relative; width: 100%; }
+          .img-container img { max-width: 95%; max-height: 95%; object-fit: contain; display: inline-block; margin-top: 2.5%; }
+          .description { padding: 10px; font-size: 9pt; color: #475569; border-top: 1px solid #f1f5f9; background: #fff; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word; }
           
-          .label { font-weight: bold; font-size: 7pt; color: #94a3b8; text-transform: uppercase; margin-bottom: 1px; }
-          .value { font-weight: 600; font-size: 9.5pt; color: #1e293b; }
+          .label { font-weight: bold; font-size: 7pt; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; display: block; }
+          .value { font-weight: 600; font-size: 10pt; color: #1e293b; display: block; margin-bottom: 2px; }
 
-          .signature-footer { margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 12px; page-break-inside: avoid; }
-          .signature-details { font-size: 8.5pt; color: #1e293b; margin-bottom: 10px; }
-          .signature-details p { margin: 1px 0; line-height: 1.25; }
+          .signature-footer { margin-top: 30px; border-top: 2px solid #f1f5f9; padding-top: 15px; page-break-inside: avoid; }
+          .signature-details { font-size: 9pt; color: #1e293b; margin-bottom: 15px; }
+          .signature-details p { margin: 2px 0; line-height: 1.4; }
           
           .signature-credits { 
             font-size: 8pt; 
@@ -426,19 +424,20 @@ La ausencia bilateral de piezas...`);
       <body>
         <div class="container">
           <div class="header">
-            <div>
-              <h1>VetDental Pro</h1>
+            <div style="float: left;">
+              <h1 style="margin: 0; color: #4f46e5; font-size: 18pt; font-weight: 800;">VetDental Pro</h1>
               <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Odontológico Completo</p>
             </div>
-            <div class="header-meta">
+            <div class="header-meta" style="float: right;">
               <p>${new Date(report.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
             </div>
+            <div style="clear: both;"></div>
           </div>
 
           <div class="pet-info">
-            <div>
+            <div style="padding: 8px;">
               <span class="label">Paciente</span>
-              <span class="value">${pet?.name}</span>
+              <span class="value" style="display: block;">${pet?.name}</span>
               <span style="font-size: 8.5pt; color: #64748b;">${pet?.type} | ${pet?.breed} | Cráneo: ${pet?.skullType} | Edad: ${pet?.age} años</span>
             </div>
           </div>
@@ -449,45 +448,34 @@ La ausencia bilateral de piezas...`);
           ` : ''}
 
           <div class="section-title">Imágenes y Hallazgos Visuales</div>
-          <div class="gallery">
+          <table class="gallery">
             ${(() => {
               let rows = [];
               for (let i = 0; i < items.length; i += 2) {
                 const item1 = items[i];
                 const item2 = items[i + 1];
-                if (item2) {
-                  rows.push(`
-                    <div class="gallery-row">
-                      <div class="gallery-item">
-                        <div class="img-container">
-                          <img src="${item1.imageData}" style="transform: rotate(${item1.rotation}deg) scaleX(${item1.isMirrored ? -1 : 1})">
-                        </div>
-                        <div class="description">${item1.description || 'Sin descripción técnica.'}</div>
+                rows.push(`
+                  <tr>
+                    <td class="gallery-item">
+                      <div class="img-container">
+                        <img src="${item1.imageData}" style="transform: rotate(${item1.rotation}deg) scaleX(${item1.isMirrored ? -1 : 1})">
                       </div>
-                      <div class="gallery-item">
-                        <div class="img-container">
-                          <img src="${item2.imageData}" style="transform: rotate(${item2.rotation}deg) scaleX(${item2.isMirrored ? -1 : 1})">
-                        </div>
-                        <div class="description">${item2.description || 'Sin descripción técnica.'}</div>
+                      <div class="description">${item1.description || 'Sin descripción técnica.'}</div>
+                    </td>
+                    ${item2 ? `
+                    <td class="gallery-item">
+                      <div class="img-container">
+                        <img src="${item2.imageData}" style="transform: rotate(${item2.rotation}deg) scaleX(${item2.isMirrored ? -1 : 1})">
                       </div>
-                    </div>
-                  `);
-                } else {
-                  rows.push(`
-                    <div class="gallery-row">
-                      <div class="gallery-item">
-                        <div class="img-container">
-                          <img src="${item1.imageData}" style="transform: rotate(${item1.rotation}deg) scaleX(${item1.isMirrored ? -1 : 1})">
-                        </div>
-                        <div class="description">${item1.description || 'Sin descripción técnica.'}</div>
-                      </div>
-                    </div>
-                  `);
-                }
+                      <div class="description">${item2.description || 'Sin descripción técnica.'}</div>
+                    </td>
+                    ` : '<td style="width: 50%; border: none; background: transparent;"></td>'}
+                  </tr>
+                `);
               }
               return rows.join('');
             })()}
-          </div>
+          </table>
 
           ${treatment ? `
             <div class="section-title">Tratamiento Recomendado</div>
