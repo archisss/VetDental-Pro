@@ -12,10 +12,10 @@ interface ReportBuilderProps {
 }
 
 const DESCRIPTION_OPTIONS = [
-  { label: 'Reabsorción ósea exponiendo raíces de', color: '#ef4444' },
-  { label: 'Reabsorción dental en raíz mesial de', color: '#f97316' },
-  { label: 'Aumento de espacio ligamental en raíces de', color: '#eab308' },
-  { label: 'sin alteraciones radiográficas aparentes anquilosis de raíz en', color: '#22c55e' }
+  { label: 'Reabsorción ósea exponiendo raíces de (rojo)', color: '#ef4444' },
+  { label: 'Reabsorción dental en raíz mesial de (naranja)', color: '#f97316' },
+  { label: 'Aumento de espacio ligamental en raíces de (amarillo)', color: '#eab308' },
+  { label: 'sin alteraciones radiográficas aparentes anquilosis de raíz en (verde)', color: '#22c55e' }
 ];
 
 const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
@@ -164,7 +164,7 @@ La ausencia bilateral de piezas...`);
     const point = { x: x * scaleX, y: y * scaleY };
     setCurrentStrokePoints(prev => [...prev, point]);
 
-    ctx.lineWidth = 4.2;
+    ctx.lineWidth = 5.0;
     ctx.lineCap = 'round';
     ctx.strokeStyle = selectedColor;
 
@@ -176,8 +176,32 @@ La ausencia bilateral de piezas...`);
 
   const undoLastStroke = () => {
     setStrokes(prev => {
+      if (prev.length === 0) return prev;
+      
+      // If it's the last stroke, clear the whole description as requested
+      if (prev.length === 1) {
+        setCurrentDescription('');
+        redrawCanvas([]);
+        return [];
+      }
+
+      const lastStroke = prev[prev.length - 1];
       const newStrokes = prev.slice(0, -1);
       redrawCanvas(newStrokes);
+      
+      // Check if any other stroke of the same color remains
+      const colorStillExists = newStrokes.some(s => s.color === lastStroke.color);
+      if (!colorStillExists) {
+        const optionToRemove = DESCRIPTION_OPTIONS.find(opt => opt.color === lastStroke.color);
+        if (optionToRemove) {
+          setCurrentDescription(current => {
+            const lines = current.split('\n');
+            const filteredLines = lines.filter(line => line.trim() !== optionToRemove.label);
+            return filteredLines.join('\n').trim();
+          });
+        }
+      }
+      
       return newStrokes;
     });
   };
@@ -190,7 +214,7 @@ La ausencia bilateral de piezas...`);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
-    ctx.lineWidth = 4.2;
+    ctx.lineWidth = 5.0;
 
     strokesList.forEach(stroke => {
       ctx.strokeStyle = stroke.color;
@@ -205,6 +229,7 @@ La ausencia bilateral de piezas...`);
 
   const clearCanvas = () => {
     setStrokes([]);
+    setCurrentDescription(''); // Clear the text box when clearing all drawings
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
