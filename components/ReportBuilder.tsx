@@ -369,85 +369,90 @@ La ausencia bilateral de piezas...`);
   };
 
   const generateReportHTML = (pet: Pet | undefined, report: DentalReport, items: ReportItem[], history: string, treatment: string, comments: string) => {
+    const formattedDate = new Date(report.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    
     return `
       <!DOCTYPE html>
       <html lang="es">
       <head>
         <meta charset="UTF-8">
         <title>Reporte Odontológico - ${pet?.name}</title>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
         <style>
-          @page { margin: 10mm; }
-          body { font-family: 'Inter', 'Segoe UI', sans-serif; padding: 0; color: #1e293b; line-height: 1.4; font-size: 11pt; background: #fff; }
-          .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 0; overflow: hidden; }
-          
-          .header { border-bottom: 2px solid #4f46e5; padding-bottom: 10px; margin-bottom: 15px; }
-          .header h1 { margin: 0; color: #4f46e5; font-size: 20pt; font-weight: 800; }
-          .header-meta { text-align: right; color: #64748b; font-size: 8.5pt; }
-          
-          .pet-info { margin-bottom: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; }
-          .pet-info div { display: flex; flex-direction: column; }
-          
-          .section-title { font-size: 10pt; font-weight: bold; color: #4f46e5; margin: 15px 0 5px 0; border-left: 4px solid #4f46e5; padding-left: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-          .text-block { background: #fff; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9; margin-bottom: 10px; white-space: pre-wrap; font-size: 10pt; color: #334155; word-wrap: break-word; overflow-wrap: break-word; }
-          
-          .gallery { width: 100%; border-collapse: separate; border-spacing: 10px; margin-top: 5px; table-layout: fixed; }
-          .gallery-item { width: 50%; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #fff; vertical-align: top; padding: 0; }
-          
-          .img-container { background: #fff; height: 220px; display: block; text-align: center; overflow: hidden; position: relative; width: 100%; }
-          .img-container img { max-width: 95%; max-height: 95%; object-fit: contain; display: inline-block; margin-top: 2.5%; }
-          .description { padding: 10px; font-size: 9pt; color: #475569; border-top: 1px solid #f1f5f9; background: #fff; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word; }
-          
-          .label { font-weight: bold; font-size: 7pt; color: #94a3b8; text-transform: uppercase; margin-bottom: 2px; display: block; }
-          .value { font-weight: 600; font-size: 10pt; color: #1e293b; display: block; margin-bottom: 2px; }
-
-          .signature-footer { margin-top: 30px; border-top: 2px solid #f1f5f9; padding-top: 15px; page-break-inside: avoid; }
-          .signature-details { font-size: 9pt; color: #1e293b; margin-bottom: 15px; }
-          .signature-details p { margin: 2px 0; line-height: 1.4; }
-          
-          .signature-credits { 
-            font-size: 8pt; 
-            color: #64748b; 
-            border-top: 1px solid #f1f5f9; 
-            padding-top: 8px; 
-            text-align: left; 
+          @page { margin: 15mm; }
+          body { 
+            font-family: 'Inter', Arial, sans-serif; 
+            padding: 0; 
+            color: #000; 
+            line-height: 1.5; 
+            font-size: 11pt; 
+            background: #fff;
           }
-          .signature-credits strong { color: #4f46e5; }
-
+          .container { width: 100%; max-width: 800px; margin: 0 auto; }
+          
+          .header { text-align: center; margin-bottom: 30px; position: relative; }
+          .date-top { text-align: right; font-size: 10pt; margin-bottom: 20px; }
+          .report-title { font-size: 14pt; font-weight: bold; margin-bottom: 5px; text-transform: none; }
+          .pet-summary { font-size: 11pt; margin-bottom: 20px; }
+          
+          .section-header { font-weight: bold; margin-top: 20px; margin-bottom: 10px; display: block; }
+          .content-text { margin-bottom: 20px; white-space: pre-wrap; }
+          
+          .gallery { width: 100%; border-collapse: separate; border-spacing: 15px; margin-top: 10px; table-layout: fixed; }
+          .gallery-item { width: 50%; vertical-align: top; padding: 0; }
+          
+          .img-box { 
+            width: 100%; 
+            height: 240px; 
+            background: #fff; 
+            border: 1px solid #ccc; 
+            display: block; 
+            text-align: center; 
+            overflow: hidden; 
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          .img-box img { 
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; 
+            display: inline-block; 
+          }
+          .img-desc { 
+            font-size: 10pt; 
+            color: #000; 
+            line-height: 1.3; 
+            text-align: left;
+            word-wrap: break-word; 
+            overflow-wrap: break-word;
+            margin-bottom: 15px;
+          }
+          
+          .footer { margin-top: 40px; font-size: 10pt; line-height: 1.4; page-break-inside: avoid; }
+          .signature-info { margin-bottom: 20px; }
+          .signature-info p { margin: 2px 0; }
+          .credits { font-size: 9pt; color: #666; border-top: 1px solid #eee; padding-top: 10px; }
+          
           @media print {
-            body { padding: 0; }
-            .container { max-width: 100%; }
-            .section-title { page-break-after: avoid; }
+            .gallery-item { page-break-inside: avoid; }
           }
         </style>
       </head>
       <body>
         <div class="container">
+          <div class="date-top">${formattedDate}</div>
+          
           <div class="header">
-            <div style="float: left;">
-              <h1 style="margin: 0; color: #4f46e5; font-size: 18pt; font-weight: 800;">VetDental Pro</h1>
-              <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Odontológico Completo</p>
-            </div>
-            <div class="header-meta" style="float: right;">
-              <p>${new Date(report.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-            </div>
-            <div style="clear: both;"></div>
-          </div>
-
-          <div class="pet-info">
-            <div style="padding: 8px;">
-              <span class="label">Paciente</span>
-              <span class="value" style="display: block;">${pet?.name}</span>
-              <span style="font-size: 8.5pt; color: #64748b;">${pet?.type} | ${pet?.breed} | Cráneo: ${pet?.skullType} | Edad: ${pet?.age} años</span>
+            <div class="report-title">Reporte odontológico completo</div>
+            <div class="pet-summary">
+              ${pet?.name}, ${pet?.type}, ${pet?.skullType || 'n/a'}, ${pet?.breed}, ${pet?.age} años
             </div>
           </div>
 
           ${history ? `
-            <div class="section-title">Historia Clínica</div>
-            <div class="text-block">${history}</div>
+            <div class="content-text"><strong>Historia clínica:</strong> ${history}</div>
           ` : ''}
 
-          <div class="section-title">Imágenes y Hallazgos Visuales</div>
           <table class="gallery">
             ${(() => {
               let rows = [];
@@ -457,19 +462,19 @@ La ausencia bilateral de piezas...`);
                 rows.push(`
                   <tr>
                     <td class="gallery-item">
-                      <div class="img-container">
+                      <div class="img-box">
                         <img src="${item1.imageData}" style="transform: rotate(${item1.rotation}deg) scaleX(${item1.isMirrored ? -1 : 1})">
                       </div>
-                      <div class="description">${item1.description || 'Sin descripción técnica.'}</div>
+                      <div class="img-desc">${item1.description || ''}</div>
                     </td>
                     ${item2 ? `
                     <td class="gallery-item">
-                      <div class="img-container">
+                      <div class="img-box">
                         <img src="${item2.imageData}" style="transform: rotate(${item2.rotation}deg) scaleX(${item2.isMirrored ? -1 : 1})">
                       </div>
-                      <div class="description">${item2.description || 'Sin descripción técnica.'}</div>
+                      <div class="img-desc">${item2.description || ''}</div>
                     </td>
-                    ` : '<td style="width: 50%; border: none; background: transparent;"></td>'}
+                    ` : '<td class="gallery-item"></td>'}
                   </tr>
                 `);
               }
@@ -478,25 +483,25 @@ La ausencia bilateral de piezas...`);
           </table>
 
           ${treatment ? `
-            <div class="section-title">Tratamiento Recomendado</div>
-            <div class="text-block">${treatment}</div>
+            <div class="section-header">Tratamiento recomendado:</div>
+            <div class="content-text">${treatment}</div>
           ` : ''}
 
           ${comments ? `
-            <div class="section-title">Observaciones Adicionales</div>
-            <div class="text-block">${comments}</div>
+            <div class="section-header">Observaciones:</div>
+            <div class="content-text">${comments}</div>
           ` : ''}
 
-          <div class="signature-footer">
-            <div class="signature-details">
+          <div class="footer">
+            <div class="signature-info">
               <p>MVZ. Especializada en odontología veterinaria por ANCLIVEPA, Sao Paulo, Brasil.</p>
-              <p style="font-size: 10pt; margin-top: 4px;"><strong>Thalia J. Chávez R.</strong></p>
-              <p>Cédula Profesional: 8061296</p>
+              <p><strong>Thalía J. Chávez R.</strong></p>
+              <p>Cédula profesional 8061296</p>
               <p>Thaliachavez@gmail.com</p>
             </div>
             
-            <div class="signature-credits">
-              <p>Este documento fue creado a travez de <strong>VetDental Pro</strong>, Todos los Derechos reservador</p>
+            <div class="credits">
+              <p>Este documento fue creado a través de <strong>VetDental Pro</strong>. Todos los derechos reservados.</p>
               <p>Creado por <strong>Incéntrica</strong> © 2026</p>
             </div>
           </div>
