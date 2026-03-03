@@ -2,7 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DB } from '../services/db';
 import { Pet, DentalReport, ReportItem } from '../types';
-import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser, Search } from 'lucide-react';
+import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser, Search, Download } from 'lucide-react';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 
 interface ReportBuilderProps {
   reportId?: string | null;
@@ -75,8 +77,16 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     setCurrentReport(report);
     setReportItems([]);
     setClinicalHistory('');
-    setRecommendedTreatment('');
-    setOtherComments('');
+    setRecommendedTreatment(`Exodoncia (extracción) de piezas dentales no viables para detener la reabsorción ósea de maxila y mandíbulas y detener el dolor debido a la inflamación crónica, así como para prevenir enfermedad renal y endocarditis bacteriana debidos a la bacteriemia crónica que las piezas infectadas transmiten al torrente sanguíneo. 
+Monitoreo radiográfico de piezas dentales con lesiones reportadas, para acompañar su evolución (cada 6 meses o cada año)
+Uso de Maxiguard®️ gel, en su presentación con vitamina C en polvo. Aplicando una gota en la parte superior de cada colmillo maxilar. Cada 24 horas`);
+    setOtherComments(`Fueron extraídas 6 piezas dentales que presentaban más movilidad dental y mayor acúmulo de cálculo, sin embargo, otras 5 piezas generan dolor por exposición de raíces (hipersensibilidad dental).
+Para reducir tiempos de anestésia se dio prioridad a las piezas con mayor reabsorción ósea.  
+Fue aplicado barniz desensibilizante VOCO®️ Profluorid en todas las coronas y raíces para mitigar la hipersensibilidad del paciente cuando toma agua, traga saliva o jadea.  El efecto de dicho barniz cubre un periodo aproximado de 30 días. Este producto no es un tratamiento definitivo, es una medida paliativa mientras se retoma el procedimiento odontológico. 
+
+La reabsorción dental es...
+
+La ausencia bilateral de piezas...`);
     setHasUnsavedChanges(true);
   };
 
@@ -146,7 +156,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3.5;
     ctx.lineCap = 'round';
     ctx.strokeStyle = selectedColor;
 
@@ -318,6 +328,141 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     setHasUnsavedChanges(false);
     setShowSavedToast(true);
     setTimeout(() => setShowSavedToast(false), 3000);
+  };
+
+  const handleDownloadReport = () => {
+    if (!currentReport) return;
+
+    const pet = pets.find(p => p.id === selectedPetId);
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <title>Reporte Odontológico - ${pet?.name}</title>
+        <style>
+          @page { margin: 10mm; }
+          body { font-family: 'Inter', 'Segoe UI', sans-serif; padding: 0; color: #1e293b; line-height: 1.4; font-size: 11pt; }
+          .container { max-width: 900px; margin: 0 auto; padding: 10px; }
+          
+          .header { border-bottom: 2px solid #4f46e5; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end; }
+          .header h1 { margin: 0; color: #4f46e5; font-size: 18pt; font-weight: 800; letter-spacing: -0.5px; }
+          .header-meta { text-align: right; color: #64748b; font-size: 8.5pt; }
+          
+          .pet-info { margin-bottom: 10px; background: #f8fafc; padding: 8px; border-radius: 8px; display: grid; grid-template-columns: 1fr; gap: 12px; border: 1px solid #e2e8f0; }
+          .pet-info div { display: flex; flex-direction: column; }
+          
+          .section-title { font-size: 9.5pt; font-weight: bold; color: #4f46e5; margin: 10px 0 4px 0; border-left: 3px solid #4f46e5; padding-left: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+          .text-block { background: #fff; padding: 6px; border-radius: 6px; border: 1px solid #f1f5f9; margin-bottom: 6px; white-space: pre-wrap; font-size: 9.5pt; color: #334155; }
+          
+          .gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 5px; }
+          .gallery-item { page-break-inside: avoid; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+          .gallery-item:last-child:nth-child(odd) { grid-column: 1 / span 2; justify-self: center; width: 49%; }
+          
+          .img-container { background: #fff; height: 180px; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; }
+          img { max-width: 100%; max-height: 100%; object-fit: contain; image-rendering: -webkit-optimize-contrast; }
+          .description { padding: 8px; font-size: 8.5pt; color: #475569; flex-grow: 1; border-top: 1px solid #f1f5f9; }
+          
+          .label { font-weight: bold; font-size: 7pt; color: #94a3b8; text-transform: uppercase; margin-bottom: 1px; }
+          .value { font-weight: 600; font-size: 9.5pt; color: #1e293b; }
+
+          .signature-footer { margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 12px; page-break-inside: avoid; }
+          .signature-details { font-size: 8.5pt; color: #1e293b; margin-bottom: 10px; }
+          .signature-details p { margin: 1px 0; line-height: 1.25; }
+          
+          .signature-credits { 
+            font-size: 8pt; 
+            color: #64748b; 
+            border-top: 1px solid #f1f5f9; 
+            padding-top: 8px; 
+            text-align: left; 
+          }
+          .signature-credits strong { color: #4f46e5; }
+
+          @media print {
+            body { padding: 0; }
+            .container { max-width: 100%; }
+            .section-title { page-break-after: avoid; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div>
+              <h1>VetDental Pro</h1>
+              <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Odontológico Completo</p>
+            </div>
+            <div class="header-meta">
+              <p>${new Date(currentReport.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            </div>
+          </div>
+
+          <div class="pet-info">
+            <div>
+              <span class="label">Paciente</span>
+              <span class="value">${pet?.name}</span>
+              <span style="font-size: 8.5pt; color: #64748b;">${pet?.type} | ${pet?.breed} | Cráneo: ${pet?.skullType} | Edad: ${pet?.age} años</span>
+            </div>
+          </div>
+
+          ${clinicalHistory ? `
+            <div class="section-title">Historia Clínica</div>
+            <div class="text-block">${clinicalHistory}</div>
+          ` : ''}
+
+          <div class="section-title">Imágenes y Hallazgos Visuales</div>
+          <div class="gallery">
+            ${reportItems.map((item, i) => `
+              <div class="gallery-item">
+                <div class="img-container">
+                  <img src="${item.imageData}" style="transform: rotate(${item.rotation}deg) scaleX(${item.isMirrored ? -1 : 1})">
+                </div>
+                <div class="description">
+                  ${item.description || 'Sin descripción técnica.'}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          ${recommendedTreatment ? `
+            <div class="section-title">Tratamiento Recomendado</div>
+            <div class="text-block">${recommendedTreatment}</div>
+          ` : ''}
+
+          ${otherComments ? `
+            <div class="section-title">Observaciones Adicionales</div>
+            <div class="text-block">${otherComments}</div>
+          ` : ''}
+
+          <div class="signature-footer">
+            <div class="signature-details">
+              <p>MVZ. Especializada en odontología veterinaria por ANCLIVEPA, Sao Paulo, Brasil.</p>
+              <p style="font-size: 10pt; margin-top: 4px;"><strong>Thalia J. Chávez R.</strong></p>
+              <p>Cédula Profesional: 8061296</p>
+              <p>Thaliachavez@gmail.com</p>
+            </div>
+            
+            <div class="signature-credits">
+              <p>Este documento fue creado a travez de <strong>VetDental Pro</strong>, Todos los Derechos reservador</p>
+              <p>Creado por <strong>Incéntrica</strong> © 2026</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const opt = {
+      margin: 10,
+      filename: `Reporte_Odontologico_${pet?.name || 'Paciente'}.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+    };
+
+    html2pdf().from(htmlContent).set(opt).save();
   };
 
   const handlePreviewReport = () => {
@@ -563,14 +708,24 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             <Save className="w-4 h-4" />
             Guardar Reporte
           </button>
-          <button
-            onClick={handlePreviewReport}
-            disabled={reportItems.length === 0}
-            className="bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-2 rounded-xl font-bold hover:bg-slate-900 dark:hover:bg-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
-          >
-            <Eye className="w-4 h-4" />
-            Vista Previa
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handlePreviewReport}
+              disabled={reportItems.length === 0}
+              className="bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-2 rounded-xl font-bold hover:bg-slate-900 dark:hover:bg-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
+            >
+              <Eye className="w-4 h-4" />
+              Vista Previa
+            </button>
+            <button
+              onClick={handleDownloadReport}
+              disabled={reportItems.length === 0}
+              className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
+            >
+              <Download className="w-4 h-4" />
+              Descargar PDF
+            </button>
+          </div>
         </div>
       </div>
 
