@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DB } from '../services/db';
 import { Pet, DentalReport, ReportItem } from '../types';
-import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser, Search, Download } from 'lucide-react';
+import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser, Search, Download, Undo } from 'lucide-react';
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
 
@@ -15,8 +15,7 @@ const DESCRIPTION_OPTIONS = [
   { label: 'Reabsorción ósea exponiendo raíces de', color: '#ef4444' },
   { label: 'Reabsorción dental en raíz mesial de', color: '#f97316' },
   { label: 'Aumento de espacio ligamental en raíces de', color: '#eab308' },
-  { label: 'sin alteraciones radiográficas aparentes anquilosis de raíz en', color: '#22c55e' },
-  { label: 'Otro', color: null }
+  { label: 'sin alteraciones radiográficas aparentes anquilosis de raíz en', color: '#22c55e' }
 ];
 
 const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
@@ -37,7 +36,6 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   // Current Item Form
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [currentDescription, setCurrentDescription] = useState('');
-  const [selectedDescriptionOptions, setSelectedDescriptionOptions] = useState<string[]>([]);
   const [rotation, setRotation] = useState(0);
   const [isMirrored, setIsMirrored] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -45,6 +43,8 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   // Drawing states
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [strokes, setStrokes] = useState<{ color: string, points: { x: number, y: number }[] }[]>([]);
+  const [currentStrokePoints, setCurrentStrokePoints] = useState<{ x: number, y: number }[]>([]);
   const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -122,11 +122,16 @@ La ausencia bilateral de piezas...`);
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
     if (!selectedColor) return;
     setIsDrawing(true);
+    setCurrentStrokePoints([]);
     draw(e);
   };
 
   const stopDrawing = () => {
+    if (isDrawing && currentStrokePoints.length > 0) {
+      setStrokes(prev => [...prev, { color: selectedColor!, points: currentStrokePoints }]);
+    }
     setIsDrawing(false);
+    setCurrentStrokePoints([]);
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -155,18 +160,51 @@ La ausencia bilateral de piezas...`);
     // Scale coordinates to canvas resolution
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
+    
+    const point = { x: x * scaleX, y: y * scaleY };
+    setCurrentStrokePoints(prev => [...prev, point]);
 
-    ctx.lineWidth = 3.5;
+    ctx.lineWidth = 4.2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = selectedColor;
 
-    ctx.lineTo(x * scaleX, y * scaleY);
+    ctx.lineTo(point.x, point.y);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(x * scaleX, y * scaleY);
+    ctx.moveTo(point.x, point.y);
+  };
+
+  const undoLastStroke = () => {
+    setStrokes(prev => {
+      const newStrokes = prev.slice(0, -1);
+      redrawCanvas(newStrokes);
+      return newStrokes;
+    });
+  };
+
+  const redrawCanvas = (strokesList: { color: string, points: { x: number, y: number }[] }[]) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 4.2;
+
+    strokesList.forEach(stroke => {
+      ctx.strokeStyle = stroke.color;
+      ctx.beginPath();
+      if (stroke.points.length > 0) {
+        ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+        stroke.points.forEach(p => ctx.lineTo(p.x, p.y));
+      }
+      ctx.stroke();
+    });
   };
 
   const clearCanvas = () => {
+    setStrokes([]);
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
@@ -223,13 +261,7 @@ La ausencia bilateral de piezas...`);
       await DB.saveReport(reportToSave);
       setCurrentReport(reportToSave);
 
-      // Combine selected options and custom description
-      const descriptions = [...selectedDescriptionOptions.filter(opt => opt !== 'Otro')];
-      if (selectedDescriptionOptions.includes('Otro') && currentDescription.trim()) {
-        descriptions.push(currentDescription.trim());
-      }
-      
-      const finalDescription = descriptions.join(' | ');
+      const finalDescription = currentDescription.trim() || 'Sin descripción técnica.';
 
       const itemData = {
         reportId: currentReport.id,
@@ -252,7 +284,7 @@ La ausencia bilateral de piezas...`);
       
       setCurrentImage(null);
       setCurrentDescription('');
-      setSelectedDescriptionOptions([]);
+      setStrokes([]);
       setRotation(0);
       setIsMirrored(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -265,25 +297,8 @@ La ausencia bilateral de piezas...`);
   const handleEditItem = (item: ReportItem) => {
     setEditingItemId(item.id);
     setCurrentImage(item.imageData);
-    
-    // Parse description back into checkboxes
-    const parts = item.description.split(' | ');
-    const selected: string[] = [];
-    let customDesc = '';
-    
-    parts.forEach(part => {
-      const isPredefined = DESCRIPTION_OPTIONS.some(opt => opt.label === part && opt.label !== 'Otro');
-      if (isPredefined) {
-        selected.push(part);
-      } else {
-        if (!selected.includes('Otro')) selected.push('Otro');
-        customDesc = customDesc ? `${customDesc}\n${part}` : part;
-      }
-    });
-    
-    setSelectedDescriptionOptions(selected);
-    setCurrentDescription(customDesc);
-    
+    setCurrentDescription(item.description);
+    setStrokes([]); // Reset strokes for new edit session
     setRotation(item.rotation);
     setIsMirrored(item.isMirrored);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -297,7 +312,6 @@ La ausencia bilateral de piezas...`);
         setEditingItemId(null);
         setCurrentImage(null);
         setCurrentDescription('');
-        setSelectedDescriptionOptions([]);
         setRotation(0);
         setIsMirrored(false);
       }
@@ -309,7 +323,6 @@ La ausencia bilateral de piezas...`);
     setEditingItemId(null);
     setCurrentImage(null);
     setCurrentDescription('');
-    setSelectedDescriptionOptions([]);
     setRotation(0);
     setIsMirrored(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -823,10 +836,15 @@ La ausencia bilateral de piezas...`);
                         key={c.color}
                         onClick={() => {
                           setSelectedColor(selectedColor === c.color ? null : c.color);
-                          // Auto-select description option based on color (add to array if not present)
+                          // Append description option based on color
                           const matchedOption = DESCRIPTION_OPTIONS.find(opt => opt.color === c.color);
-                          if (matchedOption && !selectedDescriptionOptions.includes(matchedOption.label)) {
-                            setSelectedDescriptionOptions(prev => [...prev, matchedOption.label]);
+                          if (matchedOption) {
+                            setCurrentDescription(prev => {
+                              const newText = matchedOption.label;
+                              if (!prev.trim()) return newText;
+                              if (prev.includes(newText)) return prev; // Avoid duplicate if already there? User didn't specify, but usually better
+                              return `${prev}\n${newText}`;
+                            });
                           }
                         }}
                         className={`w-10 h-10 rounded-full border-4 transition-all ${
@@ -839,9 +857,18 @@ La ausencia bilateral de piezas...`);
                   </div>
                   <div className="flex gap-2">
                     <button
+                      onClick={undoLastStroke}
+                      disabled={strokes.length === 0}
+                      className="p-2 text-slate-500 hover:text-indigo-500 transition-colors disabled:opacity-30"
+                      title="Deshacer último trazo"
+                    >
+                      <Undo className="w-5 h-5" />
+                    </button>
+                    <button
                       onClick={clearCanvas}
-                      className="p-2 text-slate-500 hover:text-red-500 transition-colors"
-                      title="Limpiar dibujos"
+                      disabled={strokes.length === 0}
+                      className="p-2 text-slate-500 hover:text-red-500 transition-colors disabled:opacity-30"
+                      title="Limpiar todo"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -870,55 +897,40 @@ La ausencia bilateral de piezas...`);
             <div className="space-y-4">
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Hallazgos Radiográficos</label>
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 gap-2">
                   {DESCRIPTION_OPTIONS.map((opt) => (
-                    <label 
+                    <button 
                       key={opt.label} 
-                      className={`flex items-start gap-3 p-4 rounded-2xl border transition-all cursor-pointer ${
-                        selectedDescriptionOptions.includes(opt.label)
-                        ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800'
-                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      }`}
+                      onClick={() => {
+                        setCurrentDescription(prev => {
+                          if (!prev.trim()) return opt.label;
+                          if (prev.includes(opt.label)) return prev;
+                          return `${prev}\n${opt.label}`;
+                        });
+                      }}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-left"
                     >
-                      <input
-                        type="checkbox"
-                        className="mt-1 w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                        checked={selectedDescriptionOptions.includes(opt.label)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedDescriptionOptions(prev => [...prev, opt.label]);
-                          } else {
-                            setSelectedDescriptionOptions(prev => prev.filter(item => item !== opt.label));
-                          }
-                        }}
+                      <div 
+                        className="w-3 h-3 rounded-full shrink-0" 
+                        style={{ backgroundColor: opt.color }}
                       />
-                      <div className="flex-1">
-                        <span className="text-sm font-medium text-slate-900 dark:text-white leading-tight">
-                          {opt.label}
-                        </span>
-                        {opt.color && (
-                          <div 
-                            className="w-3 h-3 rounded-full mt-1" 
-                            style={{ backgroundColor: opt.color }}
-                          />
-                        )}
-                      </div>
-                    </label>
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300 leading-tight">
+                        {opt.label}
+                      </span>
+                    </button>
                   ))}
                 </div>
               </div>
 
-              {selectedDescriptionOptions.includes('Otro') && (
-                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Descripción Personalizada</label>
-                  <textarea
-                    placeholder="Describa el hallazgo dental para el dueño de la mascota..."
-                    className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
-                    value={currentDescription}
-                    onChange={e => setCurrentDescription(e.target.value)}
-                  />
-                </div>
-              )}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Descripción Técnica</label>
+                <textarea
+                  placeholder="Describa los hallazgos dentales..."
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-40 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
+                  value={currentDescription}
+                  onChange={e => setCurrentDescription(e.target.value)}
+                />
+              </div>
             </div>
 
             <button
