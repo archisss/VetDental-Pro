@@ -369,6 +369,12 @@ La ausencia bilateral de piezas...`);
   };
 
   const generateReportHTML = (pet: Pet | undefined, report: DentalReport, items: ReportItem[], history: string, treatment: string, comments: string) => {
+    // Filter out the 4th item if it has the specific text
+    const filteredItems = [...items];
+    if (filteredItems.length >= 4 && filteredItems[3].description === "Sin hallazgos extras para mostrar aquí") {
+      filteredItems.splice(3, 1);
+    }
+
     return `
       <!DOCTYPE html>
       <html lang="es">
@@ -393,6 +399,7 @@ La ausencia bilateral de piezas...`);
           
           .gallery { width: 100%; border-collapse: separate; border-spacing: 10px; margin-top: 5px; table-layout: fixed; }
           .gallery-item { width: 50%; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #fff; vertical-align: top; padding: 0; }
+          .gallery-item.centered { margin: 0 auto; float: none; }
           
           .img-container { background: #fff; height: 220px; display: block; text-align: center; overflow: hidden; position: relative; width: 100%; }
           .img-container img { max-width: 95%; max-height: 95%; object-fit: contain; display: inline-block; margin-top: 2.5%; }
@@ -451,27 +458,42 @@ La ausencia bilateral de piezas...`);
           <table class="gallery">
             ${(() => {
               let rows = [];
-              for (let i = 0; i < items.length; i += 2) {
-                const item1 = items[i];
-                const item2 = items[i + 1];
-                rows.push(`
-                  <tr>
-                    <td class="gallery-item">
-                      <div class="img-container">
-                        <img src="${item1.imageData}" style="transform: rotate(${item1.rotation}deg) scaleX(${item1.isMirrored ? -1 : 1})">
-                      </div>
-                      <div class="description">${item1.description || 'Sin descripción técnica.'}</div>
-                    </td>
-                    ${item2 ? `
-                    <td class="gallery-item">
-                      <div class="img-container">
-                        <img src="${item2.imageData}" style="transform: rotate(${item2.rotation}deg) scaleX(${item2.isMirrored ? -1 : 1})">
-                      </div>
-                      <div class="description">${item2.description || 'Sin descripción técnica.'}</div>
-                    </td>
-                    ` : '<td style="width: 50%; border: none; background: transparent;"></td>'}
-                  </tr>
-                `);
+              for (let i = 0; i < filteredItems.length; i += 2) {
+                const item1 = filteredItems[i];
+                const item2 = filteredItems[i + 1];
+                
+                if (item2) {
+                  rows.push(`
+                    <tr>
+                      <td class="gallery-item">
+                        <div class="img-container">
+                          <img src="${item1.imageData}" style="transform: rotate(${item1.rotation}deg) scaleX(${item1.isMirrored ? -1 : 1})">
+                        </div>
+                        <div class="description">${item1.description || 'Sin descripción técnica.'}</div>
+                      </td>
+                      <td class="gallery-item">
+                        <div class="img-container">
+                          <img src="${item2.imageData}" style="transform: rotate(${item2.rotation}deg) scaleX(${item2.isMirrored ? -1 : 1})">
+                        </div>
+                        <div class="description">${item2.description || 'Sin descripción técnica.'}</div>
+                      </td>
+                    </tr>
+                  `);
+                } else {
+                  // Centered single item
+                  rows.push(`
+                    <tr>
+                      <td colspan="2" style="border: none; background: transparent; text-align: center; padding: 10px 0;">
+                        <div class="gallery-item centered" style="width: 49%; display: inline-block; text-align: left;">
+                          <div class="img-container">
+                            <img src="${item1.imageData}" style="transform: rotate(${item1.rotation}deg) scaleX(${item1.isMirrored ? -1 : 1})">
+                          </div>
+                          <div class="description">${item1.description || 'Sin descripción técnica.'}</div>
+                        </div>
+                      </td>
+                    </tr>
+                  `);
+                }
               }
               return rows.join('');
             })()}

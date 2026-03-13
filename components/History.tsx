@@ -31,6 +31,12 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
     if (!selectedPet) return;
     const reportItems = await DB.getReportItems(report.id);
     
+    // Filter out the 4th item if it has the specific text
+    const filteredItems = [...reportItems];
+    if (filteredItems.length >= 4 && filteredItems[3].description === "Sin hallazgos extras para mostrar aquí") {
+      filteredItems.splice(3, 1);
+    }
+    
     const htmlContent = `
       <!DOCTYPE html>
       <html lang="es">
@@ -110,7 +116,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
 
           <div class="section-title">Imágenes y Hallazgos Visuales</div>
           <div class="gallery">
-            ${reportItems.map((item, i) => `
+            ${filteredItems.map((item, i) => `
               <div class="gallery-item">
                 <div class="img-container">
                   <img src="${item.imageData}" style="transform: rotate(${item.rotation}deg) scaleX(${item.isMirrored ? -1 : 1})">
