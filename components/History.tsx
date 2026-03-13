@@ -87,7 +87,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
         <div class="container">
           <div class="header">
             <div>
-              <h1>VetDental Pro</h1>
+              <h1>OralPet Insight DX</h1>
               <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Odontológico Completo</p>
             </div>
             <div class="header-meta">
@@ -141,7 +141,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
             </div>
             
             <div class="signature-credits">
-              <p>Este documento fue creado a travez de <strong>VetDental Pro</strong>, Todos los Derechos reservador</p>
+              <p>Este documento fue creado a travez de <strong>OralPet Insight DX</strong>, Todos los Derechos reservador</p>
               <p>Creado por <strong>Incéntrica</strong> © 2026</p>
             </div>
           </div>

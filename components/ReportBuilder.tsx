@@ -164,7 +164,7 @@ La ausencia bilateral de piezas...`);
     const point = { x: x * scaleX, y: y * scaleY };
     setCurrentStrokePoints(prev => [...prev, point]);
 
-    ctx.lineWidth = 5.0;
+    ctx.lineWidth = 10.0;
     ctx.lineCap = 'round';
     ctx.strokeStyle = selectedColor;
 
@@ -214,7 +214,7 @@ La ausencia bilateral de piezas...`);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
-    ctx.lineWidth = 5.0;
+    ctx.lineWidth = 10.0;
 
     strokesList.forEach(stroke => {
       ctx.strokeStyle = stroke.color;
@@ -425,7 +425,7 @@ La ausencia bilateral de piezas...`);
         <div class="container">
           <div class="header">
             <div style="float: left;">
-              <h1 style="margin: 0; color: #4f46e5; font-size: 20pt; font-weight: 800;">VetDental Pro</h1>
+              <h1 style="margin: 0; color: #4f46e5; font-size: 20pt; font-weight: 800;">OralPet Insight DX</h1>
               <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Odontológico Completo</p>
             </div>
             <div class="header-meta" style="float: right;">
@@ -496,7 +496,7 @@ La ausencia bilateral de piezas...`);
             </div>
             
             <div class="signature-credits">
-              <p>Este documento fue creado a travez de <strong>VetDental Pro</strong>, Todos los Derechos reservador</p>
+              <p>Este documento fue creado a travez de <strong>OralPet Insight DX</strong>, Todos los Derechos reservador</p>
               <p>Creado por <strong>Incéntrica</strong> © 2026</p>
             </div>
           </div>

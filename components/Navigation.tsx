@@ -23,7 +23,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange, onLogo
         <div className="bg-indigo-600 p-2 rounded-lg shadow-lg shadow-indigo-200 dark:shadow-none">
           <Dog className="text-white w-6 h-6" />
         </div>
-        <h1 className="text-xl font-bold text-slate-800 dark:text-white">VetDental</h1>
+        <h1 className="text-xl font-bold text-slate-800 dark:text-white">OralPet Insight DX</h1>
       </div>
 
       <div className="flex-1 py-6 px-4 space-y-2">
