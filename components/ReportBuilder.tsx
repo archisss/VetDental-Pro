@@ -15,7 +15,8 @@ const DESCRIPTION_OPTIONS = [
   { label: 'Reabsorción ósea exponiendo raíces de (rojo)', color: '#ef4444' },
   { label: 'Reabsorción dental en raíz mesial de (naranja)', color: '#f97316' },
   { label: 'Aumento de espacio ligamental en raíces de (amarillo)', color: '#eab308' },
-  { label: 'sin alteraciones radiográficas aparentes anquilosis de raíz en (verde)', color: '#22c55e' }
+  { label: 'sin alteraciones radiográficas aparentes anquilosis de raíz en (verde)', color: '#22c55e' },
+  { label: 'Hallazgo en (azul)', color: '#275BF5' }
 ];
 
 const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
@@ -771,7 +772,8 @@ La ausencia bilateral de piezas...`);
                       { color: '#ef4444', label: 'Rojo' },
                       { color: '#f97316', label: 'Naranja' },
                       { color: '#eab308', label: 'Amarillo' },
-                      { color: '#22c55e', label: 'Verde' }
+                      { color: '#22c55e', label: 'Verde' },
+                      { color: '#275BF5', label: 'Azul' }
                     ].map((c) => (
                       <button
                         key={c.color}
