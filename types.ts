@@ -42,6 +42,7 @@ export interface DentalReport {
   recommendedTreatment: string;
   otherComments: string;
   notes: string;
+  language?: 'es' | 'en';
 }
 
 export interface Appointment {

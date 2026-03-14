@@ -8,10 +8,61 @@ interface HistoryProps {
   onEditReport: (reportId: string) => void;
 }
 
+const TRANSLATIONS = {
+  es: {
+    title: 'Historial de Reportes Dentales',
+    patients: 'Pacientes',
+    noPatients: 'Aún no hay pacientes registrados',
+    reportsOf: 'Reportes de',
+    selectPatient: 'Seleccione un paciente',
+    noReports: 'No hay reportes previos',
+    selectPatientToView: 'Seleccione un paciente para ver su historial',
+    viewPdf: 'Ver PDF',
+    editReport: 'Editar Reporte',
+    reportTitle: 'Reporte Odontológico',
+    fullReportTitle: 'Reporte Odontológico Completo',
+    patient: 'Paciente',
+    clinicalHistory: 'Historia Clínica',
+    visualFindings: 'Imágenes y Hallazgos Visuales',
+    noDescription: 'Sin descripción técnica.',
+    recommendedTreatment: 'Tratamiento Recomendado',
+    additionalObservations: 'Observaciones Adicionales',
+    specialistInfo: 'MVZ. Especializada en odontología veterinaria por ANCLIVEPA, Sao Paulo, Brasil.',
+    credits: 'Este documento fue creado a travez de <strong>OralPet Insight DX</strong>, Todos los Derechos reservador',
+    createdBy: 'Creado por <strong>Incéntrica</strong> © 2026',
+    noFindingsExtra: 'Sin hallazgos extras para mostrar aquí'
+  },
+  en: {
+    title: 'Dental Report History',
+    patients: 'Patients',
+    noPatients: 'No patients registered yet',
+    reportsOf: 'Reports of',
+    selectPatient: 'Select a patient',
+    noReports: 'No previous reports',
+    selectPatientToView: 'Select a patient to view their history',
+    viewPdf: 'View PDF',
+    editReport: 'Edit Report',
+    reportTitle: 'Dental Report',
+    fullReportTitle: 'Complete Dental Report',
+    patient: 'Patient',
+    clinicalHistory: 'Clinical History',
+    visualFindings: 'Images and Visual Findings',
+    noDescription: 'No technical description.',
+    recommendedTreatment: 'Recommended Treatment',
+    additionalObservations: 'Additional Observations',
+    specialistInfo: 'DVM. Specialized in veterinary dentistry by ANCLIVEPA, Sao Paulo, Brazil.',
+    credits: 'This document was created through <strong>OralPet Insight DX</strong>, All Rights Reserved',
+    createdBy: 'Created by <strong>Incéntrica</strong> © 2026',
+    noFindingsExtra: 'No extra findings to show here'
+  }
+};
+
 const History: React.FC<HistoryProps> = ({ onEditReport }) => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [reports, setReports] = useState<DentalReport[]>([]);
+  const [language, setLanguage] = useState<'es' | 'en'>('es');
+  const t = TRANSLATIONS[language];
 
   useEffect(() => {
     const loadPets = async () => {
@@ -31,18 +82,22 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
     if (!selectedPet) return;
     const reportItems = await DB.getReportItems(report.id);
     
+    // Use report's language if available, otherwise fallback to current UI language
+    const reportLang = report.language || 'es';
+    const rt = TRANSLATIONS[reportLang];
+    
     // Filter out the 4th item if it has the specific text
     const filteredItems = [...reportItems];
-    if (filteredItems.length >= 4 && filteredItems[3].description === "Sin hallazgos extras para mostrar aquí") {
+    if (filteredItems.length >= 4 && (filteredItems[3].description === "Sin hallazgos extras para mostrar aquí" || filteredItems[3].description === "No extra findings to show here")) {
       filteredItems.splice(3, 1);
     }
     
     const htmlContent = `
       <!DOCTYPE html>
-      <html lang="es">
+      <html lang="${reportLang}">
       <head>
         <meta charset="UTF-8">
-        <title>Reporte Odontológico - ${selectedPet.name}</title>
+        <title>${rt.reportTitle} - ${selectedPet.name}</title>
         <style>
           @page { margin: 10mm; }
           body { font-family: 'Inter', 'Segoe UI', sans-serif; padding: 0; color: #1e293b; line-height: 1.4; font-size: 11pt; }
@@ -68,6 +123,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
           
           .label { font-weight: bold; font-size: 7pt; color: #94a3b8; text-transform: uppercase; margin-bottom: 1px; }
           .value { font-weight: 600; font-size: 9.5pt; color: #1e293b; }
+          .meta-label { font-size: 8.5pt; color: #64748b; }
 
           .signature-footer { margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 12px; page-break-inside: avoid; }
           .signature-details { font-size: 8.5pt; color: #1e293b; margin-bottom: 10px; }
@@ -94,27 +150,27 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
           <div class="header">
             <div>
               <h1>OralPet Insight DX</h1>
-              <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Odontológico Completo</p>
+              <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">${rt.fullReportTitle}</p>
             </div>
             <div class="header-meta">
-              <p>${new Date(report.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <p>${new Date(report.date).toLocaleDateString(reportLang === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
             </div>
           </div>
 
           <div class="pet-info">
             <div>
-              <span class="label">Paciente</span>
+              <span class="label">${rt.patient}</span>
               <span class="value">${selectedPet.name}</span>
-              <span style="font-size: 8.5pt; color: #64748b;">${selectedPet.type} | ${selectedPet.breed} | Cráneo: ${selectedPet.skullType} | Edad: ${selectedPet.age} años</span>
+              <span class="meta-label">${selectedPet.type} | ${selectedPet.breed} | ${reportLang === 'es' ? 'Cráneo' : 'Skull'}: ${selectedPet.skullType} | ${reportLang === 'es' ? 'Edad' : 'Age'}: ${selectedPet.age} ${reportLang === 'es' ? 'años' : 'years'}</span>
             </div>
           </div>
 
           ${report.clinicalHistory ? `
-            <div class="section-title">Historia Clínica</div>
+            <div class="section-title">${rt.clinicalHistory}</div>
             <div class="text-block">${report.clinicalHistory}</div>
           ` : ''}
 
-          <div class="section-title">Imágenes y Hallazgos Visuales</div>
+          <div class="section-title">${rt.visualFindings}</div>
           <div class="gallery">
             ${filteredItems.map((item, i) => `
               <div class="gallery-item">
@@ -122,33 +178,33 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
                   <img src="${item.imageData}" style="transform: rotate(${item.rotation}deg) scaleX(${item.isMirrored ? -1 : 1})">
                 </div>
                 <div class="description">
-                  ${item.description || 'Sin descripción técnica.'}
+                  ${item.description || rt.noDescription}
                 </div>
               </div>
             `).join('')}
           </div>
 
           ${report.recommendedTreatment ? `
-            <div class="section-title">Tratamiento Recomendado</div>
+            <div class="section-title">${rt.recommendedTreatment}</div>
             <div class="text-block">${report.recommendedTreatment}</div>
           ` : ''}
 
           ${report.otherComments ? `
-            <div class="section-title">Observaciones Adicionales</div>
+            <div class="section-title">${rt.additionalObservations}</div>
             <div class="text-block">${report.otherComments}</div>
           ` : ''}
 
           <div class="signature-footer">
             <div class="signature-details">
-              <p>MVZ. Especializada en odontología veterinaria por ANCLIVEPA, Sao Paulo, Brasil.</p>
+              <p>${rt.specialistInfo}</p>
               <p style="font-size: 10pt; margin-top: 4px;"><strong>Thalia J. Chávez R.</strong></p>
-              <p>Cédula Profesional: 8061296</p>
+              <p>${reportLang === 'es' ? 'Cédula Profesional' : 'Professional License'}: 8061296</p>
               <p>Thaliachavez@gmail.com</p>
             </div>
             
             <div class="signature-credits">
-              <p>Este documento fue creado a travez de <strong>OralPet Insight DX</strong>, Todos los Derechos reservador</p>
-              <p>Creado por <strong>Incéntrica</strong> © 2026</p>
+              <p>${rt.credits}</p>
+              <p>${rt.createdBy}</p>
             </div>
           </div>
         </div>
@@ -170,12 +226,37 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <h2 className="text-2xl font-bold text-slate-800 dark:text-white transition-colors">Historial de Reportes Dentales</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-slate-800 dark:text-white transition-colors">{t.title}</h2>
+        
+        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700">
+          <button
+            onClick={() => setLanguage('es')}
+            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+              language === 'es' 
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            }`}
+          >
+            ES
+          </button>
+          <button
+            onClick={() => setLanguage('en')}
+            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
+              language === 'en' 
+                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            }`}
+          >
+            EN
+          </button>
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pets List */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col h-[700px] transition-all">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 font-bold text-slate-700 dark:text-slate-300 uppercase text-xs tracking-wider">Pacientes</div>
+          <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 font-bold text-slate-700 dark:text-slate-300 uppercase text-xs tracking-wider">{t.patients}</div>
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
             {pets.map(pet => (
               <button
@@ -193,7 +274,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
               </button>
             ))}
             {pets.length === 0 && (
-               <div className="p-8 text-center text-slate-400 dark:text-slate-500 italic">Aún no hay pacientes registrados</div>
+               <div className="p-8 text-center text-slate-400 dark:text-slate-500 italic">{t.noPatients}</div>
             )}
           </div>
         </div>
@@ -201,7 +282,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
         {/* Reports for selected pet */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col h-[700px] transition-all">
           <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 font-bold text-slate-700 dark:text-slate-300 uppercase text-xs tracking-wider">
-            {selectedPet ? `Reportes de ${selectedPet.name}` : 'Seleccione un paciente'}
+            {selectedPet ? `${t.reportsOf} ${selectedPet.name}` : t.selectPatient}
           </div>
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
             {reports.map(report => (
@@ -213,21 +294,21 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
                   <Calendar className="w-5 h-5" />
                 </div>
                 <div className="text-left flex-1">
-                  <p className="font-bold text-slate-800 dark:text-slate-200">{new Date(report.date).toLocaleDateString()}</p>
+                  <p className="font-bold text-slate-800 dark:text-slate-200">{new Date(report.date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US')}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">ID: {report.id.substring(0, 8).toUpperCase()}</p>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleViewReportPDF(report)}
                     className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900/50"
-                    title="Ver PDF"
+                    title={t.viewPdf}
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => onEditReport(report.id)}
                     className="p-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900/50"
-                    title="Editar Reporte"
+                    title={t.editReport}
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
@@ -235,12 +316,12 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
               </div>
             ))}
             {selectedPet && reports.length === 0 && (
-              <div className="p-8 text-center text-slate-400 dark:text-slate-500 italic">No hay reportes previos</div>
+              <div className="p-8 text-center text-slate-400 dark:text-slate-500 italic">{t.noReports}</div>
             )}
             {!selectedPet && (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 space-y-4">
                 <FileText className="w-16 h-16 opacity-10" />
-                <p className="text-sm font-medium">Seleccione un paciente para ver su historial</p>
+                <p className="text-sm font-medium">{t.selectPatientToView}</p>
               </div>
             )}
           </div>

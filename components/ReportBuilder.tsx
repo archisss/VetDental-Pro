@@ -11,15 +11,143 @@ interface ReportBuilderProps {
   onClose?: () => void;
 }
 
-const DESCRIPTION_OPTIONS = [
-  { label: 'Reabsorción ósea exponiendo raíces de (rojo)', color: '#ef4444' },
-  { label: 'Reabsorción dental en raíz mesial de (naranja)', color: '#f97316' },
-  { label: 'Aumento de espacio ligamental en raíces de (amarillo)', color: '#eab308' },
-  { label: 'sin alteraciones radiográficas aparentes anquilosis de raíz en (verde)', color: '#22c55e' },
-  { label: 'Hallazgo en (azul)', color: '#275BF5' }
-];
+type Language = 'es' | 'en';
+
+const TRANSLATIONS = {
+  es: {
+    title: 'Reporte Odontológico',
+    subtitle: 'Reporte Odontológico Completo',
+    patient: 'Paciente',
+    age: 'Edad',
+    years: 'años',
+    skull: 'Cráneo',
+    clinicalHistory: 'Historia Clínica',
+    recommendedTreatment: 'Tratamiento Recomendado',
+    otherComments: 'Otros Comentarios',
+    visualFindings: 'Imágenes y Hallazgos Visuales',
+    technicalDescription: 'Descripción Técnica',
+    noDescription: 'Sin descripción técnica.',
+    createdThrough: 'Este documento fue creado a travez de',
+    allRightsReserved: 'Todos los Derechos reservador',
+    createdBy: 'Creado por',
+    date: 'Fecha',
+    startReport: 'Iniciar Reporte Médico',
+    selectPatient: 'Seleccione un paciente para comenzar la evaluación dental',
+    searchPatient: 'Buscar Paciente',
+    searchPlaceholder: 'Escribe el nombre del paciente o clínica...',
+    noPatientsFound: 'No se encontraron pacientes',
+    startNewReport: 'Iniciar Nuevo Reporte',
+    saveReport: 'Guardar Reporte',
+    preview: 'Vista Previa',
+    downloadPdf: 'Descargar PDF',
+    historyPlaceholder: 'Describa la historia clínica relevante para este procedimiento...',
+    addImage: 'Agregar Nueva Imagen',
+    editImage: 'Editar Imagen',
+    cancelEdit: 'Cancelar Edición',
+    clickToUpload: 'Haga clic para subir una foto',
+    mirrorEffect: 'Efecto Espejo',
+    rotate90: 'Girar 90°',
+    radiographicFindings: 'Hallazgos Radiográficos',
+    technicalDescriptionPlaceholder: 'Describa los hallazgos dentales...',
+    addImageToReport: 'Añadir Imagen al Reporte',
+    saveChanges: 'Guardar Cambios',
+    treatmentPlaceholder: 'Indique los pasos a seguir y recomendaciones terapéuticas...',
+    commentsPlaceholder: 'Notas adicionales, advertencias o recordatorios...',
+    accumulatedImages: 'Imágenes Acumuladas',
+    imageNumber: 'IMAGEN',
+    noImagesSaved: 'Aún no hay imágenes guardadas',
+    savedSuccessfully: 'Cambios guardados correctamente',
+    language: 'Idioma',
+    spanish: 'Español',
+    english: 'Inglés',
+    defaultTreatment: `Exodoncia (extracción) de piezas dentales no viables para detener la reabsorción ósea de maxila y mandíbulas y detener el dolor debido a la inflamación crónica, así como para prevenir enfermedad renal y endocarditis bacteriana debidos a la bacteriemia crónica que las piezas infectadas transmiten al torrente sanguíneo. 
+Monitoreo radiográfico de piezas dentales con lesiones reportadas, para acompañar su evolución (cada 6 meses o cada año)
+Uso de Maxiguard®️ gel, en su presentación con vitamina C en polvo. Aplicando una gota en la parte superior de cada colmillo maxilar. Cada 24 horas`,
+    defaultComments: `Fueron extraídas 6 piezas dentales que presentaban más movilidad dental y mayor acúmulo de cálculo, sin embargo, otras 5 piezas generan dolor por exposición de raíces (hipersensibilidad dental).
+Para reducir tiempos de anestésia se dio prioridad a las piezas con mayor reabsorción ósea.  
+Fue aplicado barniz desensibilizante VOCO®️ Profluorid en todas las coronas y raíces para mitigar la hipersensibilidad del paciente cuando toma agua, traga saliva o jadea.  El efecto de dicho barniz cubre un periodo aproximado de 30 días. Este producto no es un tratamiento definitivo, es una medida paliativa mientras se retoma el procedimiento odontológico. 
+
+La reabsorción dental es...
+
+La ausencia bilateral de piezas...`,
+    options: [
+      { label: 'Reabsorción ósea exponiendo raíces de (rojo)', color: '#ef4444' },
+      { label: 'Reabsorción dental en raíz mesial de (naranja)', color: '#f97316' },
+      { label: 'Aumento de espacio ligamental en raíces de (amarillo)', color: '#eab308' },
+      { label: 'sin alteraciones radiográficas aparentes anquilosis de raíz en (verde)', color: '#22c55e' },
+      { label: 'Hallazgo en (azul)', color: '#275BF5' }
+    ]
+  },
+  en: {
+    title: 'Dental Report',
+    subtitle: 'Complete Dental Report',
+    patient: 'Patient',
+    age: 'Age',
+    years: 'years',
+    skull: 'Skull',
+    clinicalHistory: 'Clinical History',
+    recommendedTreatment: 'Recommended Treatment',
+    otherComments: 'Other Comments',
+    visualFindings: 'Images and Visual Findings',
+    technicalDescription: 'Technical Description',
+    noDescription: 'No technical description.',
+    createdThrough: 'This document was created through',
+    allRightsReserved: 'All Rights Reserved',
+    createdBy: 'Created by',
+    date: 'Date',
+    startReport: 'Start Medical Report',
+    selectPatient: 'Select a patient to begin the dental evaluation',
+    searchPatient: 'Search Patient',
+    searchPlaceholder: 'Type patient name or clinic...',
+    noPatientsFound: 'No patients found',
+    startNewReport: 'Start New Report',
+    saveReport: 'Save Report',
+    preview: 'Preview',
+    downloadPdf: 'Download PDF',
+    historyPlaceholder: 'Describe the relevant clinical history for this procedure...',
+    addImage: 'Add New Image',
+    editImage: 'Edit Image',
+    cancelEdit: 'Cancel Edition',
+    clickToUpload: 'Click to upload a photo',
+    mirrorEffect: 'Mirror Effect',
+    rotate90: 'Rotate 90°',
+    radiographicFindings: 'Radiographic Findings',
+    technicalDescriptionPlaceholder: 'Describe dental findings...',
+    addImageToReport: 'Add Image to Report',
+    saveChanges: 'Save Changes',
+    treatmentPlaceholder: 'Indicate steps to follow and therapeutic recommendations...',
+    commentsPlaceholder: 'Additional notes, warnings or reminders...',
+    accumulatedImages: 'Accumulated Images',
+    imageNumber: 'IMAGE',
+    noImagesSaved: 'No images saved yet',
+    savedSuccessfully: 'Changes saved successfully',
+    language: 'Language',
+    spanish: 'Spanish',
+    english: 'English',
+    defaultTreatment: `Exodontia (extraction) of non-viable teeth to stop bone resorption of the maxilla and mandibles and stop pain due to chronic inflammation, as well as to prevent kidney disease and bacterial endocarditis due to chronic bacteremia that infected pieces transmit to the bloodstream.
+Radiographic monitoring of teeth with reported lesions, to accompany their evolution (every 6 months or every year)
+Use of Maxiguard®️ gel, in its presentation with vitamin C powder. Applying one drop on the upper part of each maxillary canine. Every 24 hours`,
+    defaultComments: `6 teeth were extracted that presented more dental mobility and greater accumulation of calculus, however, another 5 pieces generate pain due to root exposure (dental hypersensitivity).
+To reduce anesthesia times, priority was given to pieces with greater bone resorption.
+VOCO®️ Profluorid desensitizing varnish was applied to all crowns and roots to mitigate the patient's hypersensitivity when drinking water, swallowing saliva or panting. The effect of said varnish covers a period of approximately 30 days. This product is not a definitive treatment, it is a palliative measure while the dental procedure is resumed.
+
+Dental resorption is...
+
+The bilateral absence of pieces...`,
+    options: [
+      { label: 'Bone resorption exposing roots of (red)', color: '#ef4444' },
+      { label: 'Dental resorption in mesial root of (orange)', color: '#f97316' },
+      { label: 'Increased ligamental space in roots of (yellow)', color: '#eab308' },
+      { label: 'without apparent radiographic alterations root ankylosis in (green)', color: '#22c55e' },
+      { label: 'Finding in (blue)', color: '#275BF5' }
+    ]
+  }
+};
 
 const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
+  const [language, setLanguage] = useState<Language>('es');
+  const t = TRANSLATIONS[language];
+  const DESCRIPTION_OPTIONS = t.options;
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetId, setSelectedPetId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,20 +202,12 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
 
   const handleStartReport = () => {
     if (!selectedPetId) return;
-    const report = DB.createReport(selectedPetId);
+    const report = DB.createReport(selectedPetId, language);
     setCurrentReport(report);
     setReportItems([]);
     setClinicalHistory('');
-    setRecommendedTreatment(`Exodoncia (extracción) de piezas dentales no viables para detener la reabsorción ósea de maxila y mandíbulas y detener el dolor debido a la inflamación crónica, así como para prevenir enfermedad renal y endocarditis bacteriana debidos a la bacteriemia crónica que las piezas infectadas transmiten al torrente sanguíneo. 
-Monitoreo radiográfico de piezas dentales con lesiones reportadas, para acompañar su evolución (cada 6 meses o cada año)
-Uso de Maxiguard®️ gel, en su presentación con vitamina C en polvo. Aplicando una gota en la parte superior de cada colmillo maxilar. Cada 24 horas`);
-    setOtherComments(`Fueron extraídas 6 piezas dentales que presentaban más movilidad dental y mayor acúmulo de cálculo, sin embargo, otras 5 piezas generan dolor por exposición de raíces (hipersensibilidad dental).
-Para reducir tiempos de anestésia se dio prioridad a las piezas con mayor reabsorción ósea.  
-Fue aplicado barniz desensibilizante VOCO®️ Profluorid en todas las coronas y raíces para mitigar la hipersensibilidad del paciente cuando toma agua, traga saliva o jadea.  El efecto de dicho barniz cubre un periodo aproximado de 30 días. Este producto no es un tratamiento definitivo, es una medida paliativa mientras se retoma el procedimiento odontológico. 
-
-La reabsorción dental es...
-
-La ausencia bilateral de piezas...`);
+    setRecommendedTreatment(t.defaultTreatment);
+    setOtherComments(t.defaultComments);
     setHasUnsavedChanges(true);
   };
 
@@ -372,16 +492,17 @@ La ausencia bilateral de piezas...`);
   const generateReportHTML = (pet: Pet | undefined, report: DentalReport, items: ReportItem[], history: string, treatment: string, comments: string) => {
     // Filter out the 4th item if it has the specific text
     const filteredItems = [...items];
-    if (filteredItems.length >= 4 && filteredItems[3].description === "Sin hallazgos extras para mostrar aquí") {
+    const filterText = language === 'es' ? "Sin hallazgos extras para mostrar aquí" : "No extra findings to show here";
+    if (filteredItems.length >= 4 && filteredItems[3].description === filterText) {
       filteredItems.splice(3, 1);
     }
 
     return `
       <!DOCTYPE html>
-      <html lang="es">
+      <html lang="${language}">
       <head>
         <meta charset="UTF-8">
-        <title>Reporte Odontológico - ${pet?.name}</title>
+        <title>${t.title} - ${pet?.name}</title>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
         <style>
           @page { margin: 10mm; }
@@ -434,28 +555,28 @@ La ausencia bilateral de piezas...`);
           <div class="header">
             <div style="float: left;">
               <h1 style="margin: 0; color: #4f46e5; font-size: 20pt; font-weight: 800;">OralPet Insight DX</h1>
-              <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">Reporte Odontológico Completo</p>
+              <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">${t.subtitle}</p>
             </div>
             <div class="header-meta" style="float: right;">
-              <p>${new Date(report.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <p>${new Date(report.date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
             </div>
             <div style="clear: both;"></div>
           </div>
 
           <div class="pet-info">
             <div style="padding: 8px;">
-              <span class="label">Paciente</span>
+              <span class="label">${t.patient}</span>
               <span class="value" style="display: block;">${pet?.name}</span>
-              <span style="font-size: 8.5pt; color: #64748b;">${pet?.type} | ${pet?.breed} | Cráneo: ${pet?.skullType} | Edad: ${pet?.age} años</span>
+              <span style="font-size: 8.5pt; color: #64748b;">${pet?.type} | ${pet?.breed} | ${t.skull}: ${pet?.skullType} | ${t.age}: ${pet?.age} ${t.years}</span>
             </div>
           </div>
 
           ${history ? `
-            <div class="section-title">Historia Clínica</div>
+            <div class="section-title">${t.clinicalHistory}</div>
             <div class="text-block">${history}</div>
           ` : ''}
 
-          <div class="section-title">Imágenes y Hallazgos Visuales</div>
+          <div class="section-title">${t.visualFindings}</div>
           <table class="gallery">
             ${(() => {
               let rows = [];
@@ -470,13 +591,13 @@ La ausencia bilateral de piezas...`);
                         <div class="img-container">
                           <img src="${item1.imageData}" style="transform: rotate(${item1.rotation}deg) scaleX(${item1.isMirrored ? -1 : 1})">
                         </div>
-                        <div class="description">${item1.description || 'Sin descripción técnica.'}</div>
+                        <div class="description">${item1.description || t.noDescription}</div>
                       </td>
                       <td class="gallery-item">
                         <div class="img-container">
                           <img src="${item2.imageData}" style="transform: rotate(${item2.rotation}deg) scaleX(${item2.isMirrored ? -1 : 1})">
                         </div>
-                        <div class="description">${item2.description || 'Sin descripción técnica.'}</div>
+                        <div class="description">${item2.description || t.noDescription}</div>
                       </td>
                     </tr>
                   `);
@@ -489,7 +610,7 @@ La ausencia bilateral de piezas...`);
                           <div class="img-container">
                             <img src="${item1.imageData}" style="transform: rotate(${item1.rotation}deg) scaleX(${item1.isMirrored ? -1 : 1})">
                           </div>
-                          <div class="description">${item1.description || 'Sin descripción técnica.'}</div>
+                          <div class="description">${item1.description || t.noDescription}</div>
                         </div>
                       </td>
                     </tr>
@@ -501,26 +622,26 @@ La ausencia bilateral de piezas...`);
           </table>
 
           ${treatment ? `
-            <div class="section-title">Tratamiento Recomendado</div>
+            <div class="section-title">${t.recommendedTreatment}</div>
             <div class="text-block">${treatment}</div>
           ` : ''}
 
           ${comments ? `
-            <div class="section-title">Observaciones Adicionales</div>
+            <div class="section-title">${t.otherComments}</div>
             <div class="text-block">${comments}</div>
           ` : ''}
 
           <div class="signature-footer">
             <div class="signature-details">
-              <p>MVZ. Especializada en odontología veterinaria por ANCLIVEPA, Sao Paulo, Brasil.</p>
+              <p>${language === 'es' ? 'MVZ. Especializada en odontología veterinaria por ANCLIVEPA, Sao Paulo, Brasil.' : 'DVM. Specialized in veterinary dentistry by ANCLIVEPA, Sao Paulo, Brazil.'}</p>
               <p style="font-size: 10pt; margin-top: 4px;"><strong>Thalia J. Chávez R.</strong></p>
-              <p>Cédula Profesional: 8061296</p>
+              <p>${language === 'es' ? 'Cédula Profesional' : 'Professional License'}: 8061296</p>
               <p>Thaliachavez@gmail.com</p>
             </div>
             
             <div class="signature-credits">
-              <p>Este documento fue creado a travez de <strong>OralPet Insight DX</strong>, Todos los Derechos reservador</p>
-              <p>Creado por <strong>Incéntrica</strong> © 2026</p>
+              <p>${t.createdThrough} <strong>OralPet Insight DX</strong>, ${t.allRightsReserved}</p>
+              <p>${t.createdBy} <strong>Incéntrica</strong> © 2026</p>
             </div>
           </div>
         </div>
@@ -560,19 +681,44 @@ La ausencia bilateral de piezas...`);
   if (!currentReport) {
     return (
       <div className="max-w-2xl mx-auto space-y-8 py-10 animate-in fade-in zoom-in-95 duration-500">
+        <div className="flex justify-end">
+          <div className="bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 flex gap-1 shadow-sm">
+            <button
+              onClick={() => setLanguage('es')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                language === 'es' 
+                ? 'bg-indigo-600 text-white shadow-md' 
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+              }`}
+            >
+              {t.spanish}
+            </button>
+            <button
+              onClick={() => setLanguage('en')}
+              className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                language === 'en' 
+                ? 'bg-indigo-600 text-white shadow-md' 
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+              }`}
+            >
+              {t.english}
+            </button>
+          </div>
+        </div>
+
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Iniciar Reporte Médico</h2>
-          <p className="text-slate-500 dark:text-slate-400">Seleccione un paciente para comenzar la evaluación dental</p>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{t.startReport}</h2>
+          <p className="text-slate-500 dark:text-slate-400">{t.selectPatient}</p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-700 space-y-6 transition-all">
           <div className="space-y-2 relative">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Buscar Paciente</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t.searchPatient}</label>
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Escribe el nombre del paciente o clínica..."
+                placeholder={t.searchPlaceholder}
                 className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none text-lg text-slate-900 dark:text-white transition-all"
                 value={searchTerm}
                 onChange={(e) => {
@@ -608,7 +754,7 @@ La ausencia bilateral de piezas...`);
                   p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                   p.clinicName.toLowerCase().includes(searchTerm.toLowerCase())
                 ).length === 0 && (
-                  <div className="px-6 py-4 text-slate-500 text-center italic">No se encontraron pacientes</div>
+                  <div className="px-6 py-4 text-slate-500 text-center italic">{t.noPatientsFound}</div>
                 )}
               </div>
             )}
@@ -620,7 +766,7 @@ La ausencia bilateral de piezas...`);
             className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-3"
           >
             <FileText className="w-6 h-6" />
-            Iniciar Nuevo Reporte
+            {t.startNewReport}
           </button>
         </div>
       </div>
@@ -634,7 +780,7 @@ La ausencia bilateral de piezas...`);
       {showSavedToast && (
         <div className="fixed top-10 right-10 bg-emerald-600 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-2 animate-bounce z-50">
           <Check className="w-5 h-5" />
-          Cambios guardados correctamente
+          {t.savedSuccessfully}
         </div>
       )}
 
@@ -647,11 +793,33 @@ La ausencia bilateral de piezas...`);
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Reporte Odontológico: {selectedPet?.name}</h2>
-            <p className="text-slate-500 dark:text-slate-400">Clínica: {selectedPet?.clinicName} | {new Date(currentReport.date).toLocaleDateString()}</p>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t.title}: {selectedPet?.name}</h2>
+            <p className="text-slate-500 dark:text-slate-400">{language === 'es' ? 'Clínica' : 'Clinic'}: {selectedPet?.clinicName} | {new Date(currentReport.date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US')}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <div className="bg-white dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 flex gap-1 shadow-sm mr-2">
+            <button
+              onClick={() => setLanguage('es')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                language === 'es' 
+                ? 'bg-indigo-600 text-white shadow-md' 
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+              }`}
+            >
+              ES
+            </button>
+            <button
+              onClick={() => setLanguage('en')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                language === 'en' 
+                ? 'bg-indigo-600 text-white shadow-md' 
+                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+              }`}
+            >
+              EN
+            </button>
+          </div>
           <button
             onClick={handleExplicitSave}
             className={`px-6 py-2 rounded-xl font-bold transition-all flex items-center gap-2 border shadow-sm ${
@@ -661,7 +829,7 @@ La ausencia bilateral de piezas...`);
             }`}
           >
             <Save className="w-4 h-4" />
-            Guardar Reporte
+            {t.saveReport}
           </button>
           <div className="flex gap-3">
             <button
@@ -670,7 +838,7 @@ La ausencia bilateral de piezas...`);
               className="bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 px-6 py-2 rounded-xl font-bold hover:bg-slate-900 dark:hover:bg-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
             >
               <Eye className="w-4 h-4" />
-              Vista Previa
+              {t.preview}
             </button>
             <button
               onClick={handleDownloadReport}
@@ -678,7 +846,7 @@ La ausencia bilateral de piezas...`);
               className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
             >
               <Download className="w-4 h-4" />
-              Descargar PDF
+              {t.downloadPdf}
             </button>
           </div>
         </div>
@@ -690,10 +858,10 @@ La ausencia bilateral de piezas...`);
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
             <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
               <ClipboardList className="w-4 h-4" />
-              Historia Clínica
+              {t.clinicalHistory}
             </div>
             <textarea
-              placeholder="Describa la historia clínica relevante para este procedimiento..."
+              placeholder={t.historyPlaceholder}
               className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
               value={clinicalHistory}
               onChange={e => { setClinicalHistory(e.target.value); setHasUnsavedChanges(true); }}
@@ -704,7 +872,7 @@ La ausencia bilateral de piezas...`);
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                 <ImagePlus className="w-5 h-5 text-indigo-500" />
-                {editingItemId ? 'Editar Imagen' : 'Agregar Nueva Imagen'}
+                {editingItemId ? t.editImage : t.addImage}
               </h3>
               {editingItemId && (
                 <button
@@ -712,7 +880,7 @@ La ausencia bilateral de piezas...`);
                   className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 flex items-center gap-1 text-sm font-medium"
                 >
                   <X className="w-4 h-4" />
-                  Cancelar Edición
+                  {t.cancelEdit}
                 </button>
               )}
             </div>
@@ -752,7 +920,7 @@ La ausencia bilateral de piezas...`);
               ) : (
                 <>
                   <ImagePlus className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-2" />
-                  <p className="text-slate-400 dark:text-slate-600 font-medium">Haga clic para subir una foto</p>
+                  <p className="text-slate-400 dark:text-slate-600 font-medium">{t.clickToUpload}</p>
                 </>
               )}
               <input 
@@ -769,11 +937,11 @@ La ausencia bilateral de piezas...`);
                 <div className="flex items-center justify-between">
                   <div className="flex gap-2">
                     {[
-                      { color: '#ef4444', label: 'Rojo' },
-                      { color: '#f97316', label: 'Naranja' },
-                      { color: '#eab308', label: 'Amarillo' },
-                      { color: '#22c55e', label: 'Verde' },
-                      { color: '#275BF5', label: 'Azul' }
+                      { color: '#ef4444', label: language === 'es' ? 'Rojo' : 'Red' },
+                      { color: '#f97316', label: language === 'es' ? 'Naranja' : 'Orange' },
+                      { color: '#eab308', label: language === 'es' ? 'Amarillo' : 'Yellow' },
+                      { color: '#22c55e', label: language === 'es' ? 'Verde' : 'Green' },
+                      { color: '#275BF5', label: language === 'es' ? 'Azul' : 'Blue' }
                     ].map((c) => (
                       <button
                         key={c.color}
@@ -794,7 +962,7 @@ La ausencia bilateral de piezas...`);
                           selectedColor === c.color ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105'
                         }`}
                         style={{ backgroundColor: c.color }}
-                        title={`Dibujar en ${c.label}`}
+                        title={`${language === 'es' ? 'Dibujar en' : 'Draw in'} ${c.label}`}
                       />
                     ))}
                   </div>
@@ -803,7 +971,7 @@ La ausencia bilateral de piezas...`);
                       onClick={undoLastStroke}
                       disabled={strokes.length === 0}
                       className="p-2 text-slate-500 hover:text-indigo-500 transition-colors disabled:opacity-30"
-                      title="Deshacer último trazo"
+                      title={language === 'es' ? "Deshacer último trazo" : "Undo last stroke"}
                     >
                       <Undo className="w-5 h-5" />
                     </button>
@@ -811,7 +979,7 @@ La ausencia bilateral de piezas...`);
                       onClick={clearCanvas}
                       disabled={strokes.length === 0}
                       className="p-2 text-slate-500 hover:text-red-500 transition-colors disabled:opacity-30"
-                      title="Limpiar todo"
+                      title={language === 'es' ? "Limpiar todo" : "Clear all"}
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -824,14 +992,14 @@ La ausencia bilateral de piezas...`);
                     className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors font-medium"
                   >
                     <FlipHorizontal className="w-4 h-4" />
-                    Efecto Espejo
+                    {t.mirrorEffect}
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setRotation(r => (r + 90) % 360); }}
                     className="flex-1 flex items-center justify-center gap-2 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors font-medium"
                   >
                     <RotateCcw className="w-4 h-4" />
-                    Girar 90°
+                    {t.rotate90}
                   </button>
                 </div>
               </div>
@@ -839,7 +1007,7 @@ La ausencia bilateral de piezas...`);
 
             <div className="space-y-4">
               <div className="space-y-3">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Hallazgos Radiográficos</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">{t.radiographicFindings}</label>
                 <div className="grid grid-cols-1 gap-2">
                   {DESCRIPTION_OPTIONS.map((opt) => (
                     <button 
@@ -866,9 +1034,9 @@ La ausencia bilateral de piezas...`);
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">Descripción Técnica</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">{t.technicalDescription}</label>
                 <textarea
-                  placeholder="Describa los hallazgos dentales..."
+                  placeholder={t.technicalDescriptionPlaceholder}
                   className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-40 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
                   value={currentDescription}
                   onChange={e => setCurrentDescription(e.target.value)}
@@ -882,7 +1050,7 @@ La ausencia bilateral de piezas...`);
               className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg"
             >
               <Save className="w-5 h-5" />
-              {editingItemId ? 'Guardar Cambios' : 'Añadir Imagen al Reporte'}
+              {editingItemId ? t.saveChanges : t.addImageToReport}
             </button>
           </div>
 
@@ -890,10 +1058,10 @@ La ausencia bilateral de piezas...`);
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
             <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
               <Stethoscope className="w-4 h-4" />
-              Tratamiento Recomendado
+              {t.recommendedTreatment}
             </div>
             <textarea
-              placeholder="Indique los pasos a seguir y recomendaciones terapéuticas..."
+              placeholder={t.treatmentPlaceholder}
               className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
               value={recommendedTreatment}
               onChange={e => { setRecommendedTreatment(e.target.value); setHasUnsavedChanges(true); }}
@@ -904,10 +1072,10 @@ La ausencia bilateral de piezas...`);
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
             <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
               <MessageSquare className="w-4 h-4" />
-              Otros Comentarios
+              {t.otherComments}
             </div>
             <textarea
-              placeholder="Notas adicionales, advertencias o recordatorios..."
+              placeholder={t.commentsPlaceholder}
               className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-32 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
               value={otherComments}
               onChange={e => { setOtherComments(e.target.value); setHasUnsavedChanges(true); }}
@@ -917,7 +1085,7 @@ La ausencia bilateral de piezas...`);
 
         <div className="space-y-4">
           <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2 uppercase text-xs tracking-wider">
-            Imágenes Acumuladas
+            {t.accumulatedImages}
             <span className="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full text-xs font-bold">{reportItems.length}</span>
           </h3>
           <div className="grid grid-cols-1 gap-4 overflow-y-auto max-h-[1200px] pr-2">
@@ -934,32 +1102,32 @@ La ausencia bilateral de piezas...`);
                 </div>
                 <div className="flex-1 space-y-2">
                   <div className="flex justify-between items-start">
-                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded">IMAGEN #{index + 1}</span>
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded">{t.imageNumber} #{index + 1}</span>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEditItem(item)}
                         className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
-                        title="Editar"
+                        title={language === 'es' ? "Editar" : "Edit"}
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteItem(item.id)}
                         className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                        title="Eliminar"
+                        title={language === 'es' ? "Eliminar" : "Delete"}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm line-clamp-3 italic leading-relaxed">"{item.description || 'Sin descripción'}"</p>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm line-clamp-3 italic leading-relaxed">"{item.description || (language === 'es' ? 'Sin descripción' : 'No description')}"</p>
                 </div>
               </div>
             ))}
             {reportItems.length === 0 && (
               <div className="h-64 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
                 <FileText className="w-12 h-12 mb-2 opacity-10" />
-                <p className="text-sm">Aún no hay imágenes guardadas</p>
+                <p className="text-sm">{t.noImagesSaved}</p>
               </div>
             )}
           </div>

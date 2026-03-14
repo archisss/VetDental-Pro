@@ -68,7 +68,7 @@ export const DB = {
       body: JSON.stringify(report)
     });
   },
-  createReport: (petId: string): DentalReport => {
+  createReport: (petId: string, language?: 'es' | 'en'): DentalReport => {
     return {
       id: crypto.randomUUID(),
       petId,
@@ -76,7 +76,8 @@ export const DB = {
       clinicalHistory: '',
       recommendedTreatment: '',
       otherComments: '',
-      notes: ''
+      notes: '',
+      language
     };
   },
 
