@@ -285,7 +285,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     const point = { x: x * scaleX, y: y * scaleY };
     setCurrentStrokePoints(prev => [...prev, point]);
 
-    ctx.lineWidth = 10.0;
+    ctx.lineWidth = 12.0;
     ctx.lineCap = 'round';
     ctx.strokeStyle = selectedColor;
 
@@ -335,7 +335,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
-    ctx.lineWidth = 10.0;
+    ctx.lineWidth = 12.0;
 
     strokesList.forEach(stroke => {
       ctx.strokeStyle = stroke.color;
@@ -947,16 +947,6 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                         key={c.color}
                         onClick={() => {
                           setSelectedColor(selectedColor === c.color ? null : c.color);
-                          // Append description option based on color
-                          const matchedOption = DESCRIPTION_OPTIONS.find(opt => opt.color === c.color);
-                          if (matchedOption) {
-                            setCurrentDescription(prev => {
-                              const newText = matchedOption.label;
-                              if (!prev.trim()) return newText;
-                              if (prev.includes(newText)) return prev; // Avoid duplicate if already there? User didn't specify, but usually better
-                              return `${prev}\n${newText}`;
-                            });
-                          }
                         }}
                         className={`w-10 h-10 rounded-full border-4 transition-all ${
                           selectedColor === c.color ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105'
