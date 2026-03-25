@@ -285,7 +285,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     const point = { x: x * scaleX, y: y * scaleY };
     setCurrentStrokePoints(prev => [...prev, point]);
 
-    ctx.lineWidth = 12.0;
+    ctx.lineWidth = 15.0;
     ctx.lineCap = 'round';
     ctx.strokeStyle = selectedColor;
 
@@ -299,30 +299,8 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     setStrokes(prev => {
       if (prev.length === 0) return prev;
       
-      // If it's the last stroke, clear the whole description as requested
-      if (prev.length === 1) {
-        setCurrentDescription('');
-        redrawCanvas([]);
-        return [];
-      }
-
-      const lastStroke = prev[prev.length - 1];
       const newStrokes = prev.slice(0, -1);
       redrawCanvas(newStrokes);
-      
-      // Check if any other stroke of the same color remains
-      const colorStillExists = newStrokes.some(s => s.color === lastStroke.color);
-      if (!colorStillExists) {
-        const optionToRemove = DESCRIPTION_OPTIONS.find(opt => opt.color === lastStroke.color);
-        if (optionToRemove) {
-          setCurrentDescription(current => {
-            const lines = current.split('\n');
-            const filteredLines = lines.filter(line => line.trim() !== optionToRemove.label);
-            return filteredLines.join('\n').trim();
-          });
-        }
-      }
-      
       return newStrokes;
     });
   };
@@ -335,7 +313,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
-    ctx.lineWidth = 12.0;
+    ctx.lineWidth = 15.0;
 
     strokesList.forEach(stroke => {
       ctx.strokeStyle = stroke.color;
@@ -350,7 +328,6 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
 
   const clearCanvas = () => {
     setStrokes([]);
-    setCurrentDescription(''); // Clear the text box when clearing all drawings
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext('2d');
