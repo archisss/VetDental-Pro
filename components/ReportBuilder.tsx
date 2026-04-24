@@ -531,7 +531,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
         <div class="container">
           <div class="header">
             <div style="float: left;">
-              <h1 style="margin: 0; color: #4f46e5; font-size: 20pt; font-weight: 800;">OralPet Insight DX</h1>
+              <h1 style="margin: 0; color: #4f46e5; font-size: 20pt; font-weight: 800;">Dent'a'Vet</h1>
               <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">${t.subtitle}</p>
             </div>
             <div class="header-meta" style="float: right;">
@@ -544,7 +544,20 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             <div style="padding: 8px;">
               <span class="label">${t.patient}</span>
               <span class="value" style="display: block;">${pet?.name}</span>
-              <span style="font-size: 8.5pt; color: #64748b;">${pet?.type} | ${pet?.breed} | ${t.skull}: ${pet?.skullType} | ${t.age}: ${pet?.age} ${t.years}</span>
+              <span style="font-size: 8.5pt; color: #64748b;">
+                ${(() => {
+                  const translate = (val: string | undefined, lang: string) => {
+                    if (lang !== 'en' || !val) return val;
+                    const map: Record<string, string> = {
+                      'Canino': 'Canine', 'Felino': 'Feline', 'Roedor': 'Rodent', 'Primate': 'Primate', 'Ave': 'Bird', 'Otro': 'Other',
+                      'Mesocefálico': 'Mesocephalic', 'Braquicefálico': 'Brachycephalic', 'Dolicoefálico': 'Dolichocephalic',
+                      'Criollo': 'Mixed Breed'
+                    };
+                    return map[val] || val;
+                  };
+                  return `${translate(pet?.type, language)} | ${translate(pet?.breed, language)} | ${t.skull}: ${translate(pet?.skullType, language)} | ${t.age}: ${pet?.age} ${t.years}`;
+                })()}
+              </span>
             </div>
           </div>
 
@@ -617,7 +630,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             </div>
             
             <div class="signature-credits">
-              <p>${t.createdThrough} <strong>OralPet Insight DX</strong>, ${t.allRightsReserved}</p>
+              <p>${t.createdThrough} <strong>Dent'a'Vet</strong>, ${t.allRightsReserved}</p>
               <p>${t.createdBy} <strong>Incéntrica</strong> © 2026</p>
             </div>
           </div>
@@ -973,6 +986,16 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
             )}
 
             <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">{t.technicalDescription}</label>
+                <textarea
+                  placeholder={t.technicalDescriptionPlaceholder}
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-40 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
+                  value={currentDescription}
+                  onChange={e => setCurrentDescription(e.target.value)}
+                />
+              </div>
+
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">{t.radiographicFindings}</label>
                 <div className="grid grid-cols-1 gap-2">
@@ -998,16 +1021,6 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                     </button>
                   ))}
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 ml-1">{t.technicalDescription}</label>
-                <textarea
-                  placeholder={t.technicalDescriptionPlaceholder}
-                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none h-40 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all"
-                  value={currentDescription}
-                  onChange={e => setCurrentDescription(e.target.value)}
-                />
               </div>
             </div>
 

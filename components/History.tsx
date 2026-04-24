@@ -28,7 +28,7 @@ const TRANSLATIONS = {
     recommendedTreatment: 'Tratamiento Recomendado',
     additionalObservations: 'Observaciones Adicionales',
     specialistInfo: 'MVZ. Especializada en odontología veterinaria por ANCLIVEPA, Sao Paulo, Brasil.',
-    credits: 'Este documento fue creado a travez de <strong>OralPet Insight DX</strong>, Todos los Derechos reservador',
+    credits: 'Este documento fue creado a travez de <strong>Dent\'a\'Vet</strong>, Todos los Derechos reservador',
     createdBy: 'Creado por <strong>Incéntrica</strong> © 2026',
     noFindingsExtra: 'Sin hallazgos extras para mostrar aquí'
   },
@@ -51,7 +51,7 @@ const TRANSLATIONS = {
     recommendedTreatment: 'Recommended Treatment',
     additionalObservations: 'Additional Observations',
     specialistInfo: 'DVM. Specialized in veterinary dentistry by ANCLIVEPA, Sao Paulo, Brazil.',
-    credits: 'This document was created through <strong>OralPet Insight DX</strong>, All Rights Reserved',
+    credits: 'This document was created through <strong>Dent\'a\'Vet</strong>, All Rights Reserved',
     createdBy: 'Created by <strong>Incéntrica</strong> © 2026',
     noFindingsExtra: 'No extra findings to show here'
   }
@@ -149,7 +149,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
         <div class="container">
           <div class="header">
             <div>
-              <h1>OralPet Insight DX</h1>
+              <h1>Dent'a'Vet</h1>
               <p style="margin: 0; font-weight: 600; color: #64748b; font-size: 8.5pt;">${rt.fullReportTitle}</p>
             </div>
             <div class="header-meta">
@@ -161,7 +161,20 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
             <div>
               <span class="label">${rt.patient}</span>
               <span class="value">${selectedPet.name}</span>
-              <span class="meta-label">${selectedPet.type} | ${selectedPet.breed} | ${reportLang === 'es' ? 'Cráneo' : 'Skull'}: ${selectedPet.skullType} | ${reportLang === 'es' ? 'Edad' : 'Age'}: ${selectedPet.age} ${reportLang === 'es' ? 'años' : 'years'}</span>
+              <span class="meta-label">
+                ${(() => {
+                  const translate = (val: string, lang: string) => {
+                    if (lang !== 'en') return val;
+                    const map: Record<string, string> = {
+                      'Canino': 'Canine', 'Felino': 'Feline', 'Roedor': 'Rodent', 'Primate': 'Primate', 'Ave': 'Bird', 'Otro': 'Other',
+                      'Mesocefálico': 'Mesocephalic', 'Braquicefálico': 'Brachycephalic', 'Dolicoefálico': 'Dolichocephalic',
+                      'Criollo': 'Mixed Breed'
+                    };
+                    return map[val] || val;
+                  };
+                  return `${translate(selectedPet.type, reportLang)} | ${translate(selectedPet.breed, reportLang)} | ${reportLang === 'es' ? 'Cráneo' : 'Skull'}: ${translate(selectedPet.skullType, reportLang)} | ${reportLang === 'es' ? 'Edad' : 'Age'}: ${selectedPet.age} ${reportLang === 'es' ? 'años' : 'years'}`;
+                })()}
+              </span>
             </div>
           </div>
 
