@@ -1111,9 +1111,24 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
 
           {/* Tratamiento Recomendado Section */}
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
-            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
-              <Stethoscope className="w-4 h-4" />
-              {t.recommendedTreatment}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
+                <Stethoscope className="w-4 h-4" />
+                {t.recommendedTreatment}
+              </div>
+              {recommendedTreatment && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRecommendedTreatment('');
+                    setHasUnsavedChanges(true);
+                  }}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 bg-rose-50/50 dark:bg-rose-950/20 px-2.5 py-1 rounded-full transition-all focus:outline-none focus:ring-1 focus:ring-rose-400"
+                >
+                  <Eraser className="w-3.5 h-3.5" />
+                  {language === 'es' ? 'Limpiar' : 'Clear'}
+                </button>
+              )}
             </div>
             <textarea
               placeholder={t.treatmentPlaceholder}
@@ -1154,9 +1169,24 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
 
           {/* Otros Comentarios Section */}
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
-            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
-              <MessageSquare className="w-4 h-4" />
-              {t.otherComments}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
+                <MessageSquare className="w-4 h-4" />
+                {t.otherComments}
+              </div>
+              {otherComments && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtherComments('');
+                    setHasUnsavedChanges(true);
+                  }}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-rose-500 hover:text-rose-600 dark:text-rose-400 dark:hover:text-rose-300 bg-rose-50/50 dark:bg-rose-950/20 px-2.5 py-1 rounded-full transition-all focus:outline-none focus:ring-1 focus:ring-rose-400"
+                >
+                  <Eraser className="w-3.5 h-3.5" />
+                  {language === 'es' ? 'Limpiar' : 'Clear'}
+                </button>
+              )}
             </div>
             <textarea
               placeholder={t.commentsPlaceholder}
