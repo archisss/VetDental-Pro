@@ -249,8 +249,8 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     setProcedureDate(report.date ? report.date.split('T')[0] : new Date().toISOString().split('T')[0]);
     setReportItems([]);
     setClinicalHistory('');
-    setRecommendedTreatment(t.defaultTreatment);
-    setOtherComments(t.defaultComments);
+    setRecommendedTreatment('');
+    setOtherComments('');
     setHasUnsavedChanges(true);
   };
 
@@ -1125,7 +1125,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
               <span className="text-xs font-bold text-slate-400 dark:text-slate-500 w-full mb-1">
                 {language === 'es' ? 'Sugerencias rápidas (haga clic para agregar):' : 'Quick suggestions (click to add):'}
               </span>
-              <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1">
+              <div className="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
                 {(t as any).treatmentSuggestions?.map((sug: string, i: number) => (
                   <button
                     key={i}
@@ -1138,10 +1138,14 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                       });
                       setHasUnsavedChanges(true);
                     }}
-                    className="text-xs text-left bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-150 dark:border-slate-700/60 rounded-xl p-2.5 transition-all w-full hover:border-slate-350 dark:hover:border-slate-600"
+                    className="text-xs text-left bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800/85 text-slate-600 dark:text-slate-400 border border-slate-150 dark:border-slate-700/60 rounded-2xl p-4 leading-relaxed transition-all w-full hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-xs focus:outline-none"
                     title={sug}
                   >
-                    {sug}
+                    {(() => {
+                      const words = sug.split(/\s+/);
+                      if (words.length <= 25) return sug;
+                      return words.slice(0, 25).join(' ') + ' ......';
+                    })()}
                   </button>
                 ))}
               </div>
@@ -1164,7 +1168,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
               <span className="text-xs font-bold text-slate-400 dark:text-slate-500 w-full mb-1">
                 {language === 'es' ? 'Sugerencias rápidas (haga clic para agregar):' : 'Quick suggestions (click to add):'}
               </span>
-              <div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-1">
+              <div className="flex flex-col gap-3 max-h-72 overflow-y-auto pr-1">
                 {(t as any).commentSuggestions?.map((sug: string, i: number) => (
                   <button
                     key={i}
@@ -1177,10 +1181,14 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                       });
                       setHasUnsavedChanges(true);
                     }}
-                    className="text-xs text-left bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-150 dark:border-slate-700/60 rounded-xl p-2.5 transition-all w-full line-clamp-2 hover:border-slate-350 dark:hover:border-slate-600"
+                    className="text-xs text-left bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800/85 text-slate-600 dark:text-slate-400 border border-slate-150 dark:border-slate-700/60 rounded-2xl p-4 leading-relaxed transition-all w-full hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-xs focus:outline-none"
                     title={sug}
                   >
-                    {sug}
+                    {(() => {
+                      const words = sug.split(/\s+/);
+                      if (words.length <= 25) return sug;
+                      return words.slice(0, 25).join(' ') + ' ......';
+                    })()}
                   </button>
                 ))}
               </div>
