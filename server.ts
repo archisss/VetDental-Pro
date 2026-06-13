@@ -217,8 +217,8 @@ app.post('/api/reports', async (req, res) => {
     console.log('Saving report:', req.body.id);
     const { id, petId, date, clinicalHistory, recommendedTreatment, otherComments, notes } = req.body;
     await pool.query(
-      'INSERT INTO reports (id, petId, date, clinicalHistory, recommendedTreatment, otherComments, notes) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE clinicalHistory=?, recommendedTreatment=?, otherComments=?, notes=?',
-      [id, petId, date, clinicalHistory, recommendedTreatment, otherComments, notes, clinicalHistory, recommendedTreatment, otherComments, notes]
+      'INSERT INTO reports (id, petId, date, clinicalHistory, recommendedTreatment, otherComments, notes) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date=?, clinicalHistory=?, recommendedTreatment=?, otherComments=?, notes=?',
+      [id, petId, date, clinicalHistory, recommendedTreatment, otherComments, notes, date, clinicalHistory, recommendedTreatment, otherComments, notes]
     );
     res.status(201).json(req.body);
   } catch (error) {

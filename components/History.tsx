@@ -28,7 +28,7 @@ const TRANSLATIONS = {
     recommendedTreatment: 'Tratamiento Recomendado',
     additionalObservations: 'Observaciones Adicionales',
     specialistInfo: 'MVZ. Especializada en odontología veterinaria por ANCLIVEPA, Sao Paulo, Brasil.',
-    credits: 'Este documento fue creado a travez de <strong>Dent\'a\'Vet</strong>, Todos los Derechos reservador',
+    credits: 'Este documento fue elaborado por <strong>Dent\'a\'Vet</strong>, Todos los Derechos reservados',
     createdBy: 'Creado por <strong>Incéntrica</strong> © 2026',
     noFindingsExtra: 'Sin hallazgos extras para mostrar aquí'
   },
@@ -51,7 +51,7 @@ const TRANSLATIONS = {
     recommendedTreatment: 'Recommended Treatment',
     additionalObservations: 'Additional Observations',
     specialistInfo: 'DVM. Specialized in veterinary dentistry by ANCLIVEPA, Sao Paulo, Brazil.',
-    credits: 'This document was created through <strong>Dent\'a\'Vet</strong>, All Rights Reserved',
+    credits: 'This document was prepared by <strong>Dent\'a\'Vet</strong>, All Rights Reserved',
     createdBy: 'Created by <strong>Incéntrica</strong> © 2026',
     noFindingsExtra: 'No extra findings to show here'
   }

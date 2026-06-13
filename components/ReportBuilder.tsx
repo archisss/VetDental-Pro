@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DB } from '../services/db';
 import { Pet, DentalReport, ReportItem } from '../types';
-import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser, Search, Download, Undo } from 'lucide-react';
+import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser, Search, Download, Undo, Calendar } from 'lucide-react';
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
 
@@ -27,8 +27,8 @@ const TRANSLATIONS = {
     visualFindings: 'Imágenes y Hallazgos Visuales',
     technicalDescription: 'Descripción Técnica',
     noDescription: 'Sin descripción técnica.',
-    createdThrough: 'Este documento fue creado a travez de',
-    allRightsReserved: 'Todos los Derechos reservador',
+    createdThrough: 'Este documento fue elaborado por',
+    allRightsReserved: 'Todos los Derechos reservados',
     createdBy: 'Creado por',
     date: 'Fecha',
     startReport: 'Iniciar Reporte Médico',
@@ -71,11 +71,30 @@ La reabsorción dental es...
 
 La ausencia bilateral de piezas...`,
     options: [
-      { label: 'Reabsorción ósea exponiendo raíces de (rojo)', color: '#ef4444' },
-      { label: 'Reabsorción dental en raíz mesial de (naranja)', color: '#f97316' },
-      { label: 'Aumento de espacio ligamental en raíces de (amarillo)', color: '#eab308' },
-      { label: 'sin alteraciones radiográficas aparentes anquilosis de raíz en (verde)', color: '#22c55e' },
-      { label: 'Hallazgo en (azul)', color: '#275BF5' }
+      { label: 'Severa reabsorción ósea exponiendo raíces de (rojo)', color: '#ef4444' },
+      { label: 'Reabsorción dental en raíz de (naranja)', color: '#f97316' },
+      { label: 'Ensanchamiento del espacio del ligamento periodontal en (amarillo)', color: '#eab308' },
+      { label: 'Alteraciones en densidad (verde) sin alteraciones radiográficas aparentes', color: '#22c55e' },
+      { label: '(Posterior a extracciones) hueso alveolar de . Área donde se situaban sus coronas (azul)', color: '#275BF5' }
+    ],
+    treatmentSuggestions: [
+      'Exodoncia (extracción) de piezas dentales con daños irreversibles',
+      'Monitoreo radiográfico de piezas viables y profilaxis odontológica con pulido de esmalte cada 6 meses o cada año',
+      'Uso diario de gel limpiador MaxiGuard® en su versión con vitamina C en polvo, aplicando una gota en la encía de cada colmillo maxilar para prevenir el acumulo de placa bacteriana y controlar la reacción de mucosas y encías.'
+    ],
+    commentSuggestions: [
+      'Fueron extraídas piezas dentales cuyas lesiones son irreversibles, generaban una respuesta inflamatoria muy dolorosa para el paciente y lo predisponían a una endocarditis bacteriana o fallo renal por la colonización bacteriana.',
+      'La ausencia bilateral de piezas dentales como 110 y 210, 411 y 311 es un hallazgo común que, en ausencia de enfermedad periodontal crónica, suele significar que el paciente nació sin dichas piezas, no requiere atención médica.',
+      'La anquilosis dental es una condición común en pacientes geriátricos, donde con el paso de los años el ligamento periodontal fue reemplazado por tejido similar al hueso, fijando la raíz permanentemente al alveolo dental. A menos que exista una lesión apical o reabsorción ósea evidente, dicha pieza no requiere extracción, puesto que no se considera una pieza que genere dolor y su extracción es más difícil.',
+      'La hiperplasia gingival y la retracción gingival son respuestas a la presencia de placa bacteriana. La profilaxis odontológica mejora la salud periodontal; sin embargo, se requiere higiene oral diaria mediante cepillado dental. De manera alternativa, el uso diario de MaxiGuard® Gel combinado con profilaxis odontológica periódica puede ayudar a detener la progresión de las lesiones y preservar las piezas dentales afectadas.',
+      'Las piezas dentales 105, 205, 406, 405, 305 y 306 no existen en gatos, es normal que no aparezcan en el reporte.',
+      'La reabsorción dental y gingivoestomatitis felina son condiciones dolorosas cuya causa no ha sido identificada aún, sin embargo, se reporta que los gatos sometidos a estrés diario empeoran su sinología. Considerando la agrupación de dos o más gatos como un factor estresante para el individuo, la gingivoestomatitis es reportada en domicilios con múltiples gatos. Disminuir los niveles de estrés en casa con otros tratamientos ayuda a disminuir las lesiones en la boca de los pacientes',
+      'El barniz desensibilizante se aplicó debido a la extensa exposición radicular. Estas piezas dentales son hipersensibles al contacto con agua, saliva y alimento.',
+      'Proporciona un efecto analgésico temporal sobre la dentina durante aproximadamente 30 días; sin embargo, no constituye un tratamiento definitivo, ya que no aborda la infección subyacente ni previene la resorción ósea en curso.',
+      'Todos los perros y gatos bajo cuidado humano que reciben una dieta distinta a la especie-específica (presas enteras en entorno natural) deben contar con una rutina de cepillado dental diario para evitar el acúmulo de placa bacteriana y prevenir enfermedad periodontal, fístulas odontogénicas y fracturas patológicas de mandíbula. En caso contrario, deberá realizarse profilaxis odontológica (con pulido de esmalte) de forma periódica, cada 6 o 12 meses según la salud oral individual.',
+      'Es preferible ofrecer croqueta seca del mayor tamaño posible para fomentar el uso de la mandíbula y de las piezas dentales en la trituración del alimento antes de su deglución. Esta masticación genera una fricción beneficiosa sobre el esmalte, a diferencia del alimento pastoso, que tiende a retenerse entre las piezas dentales. Cuando el paciente ya no cuenta con piezas dentales funcionales, puede tragar las croquetas enteras sin problema; estas están formuladas para ser digeridas de manera eficiente incluso sin masticación. No se recomienda ablandar la dieta mediante ningún método.',
+      'No deben ofrecerse huesos, madera ni plástico duros a los perros, ya que el esmalte dental sufre un desgaste innecesario y, en presencia de enfermedad periodontal o en dientes jóvenes, pueden producirse fracturas.',
+      'Los únicos juguetes recomendables para roer de forma solitaria son las cuerdas de nylon trenzadas o con nudos y los peluches diseñados específicamente para perros. Las pelotas de goma suave son ideales para el juego interactivo.'
     ]
   },
   en: {
@@ -91,7 +110,7 @@ La ausencia bilateral de piezas...`,
     visualFindings: 'Images and Visual Findings',
     technicalDescription: 'Technical Description',
     noDescription: 'No technical description.',
-    createdThrough: 'This document was created through',
+    createdThrough: 'This document was prepared by',
     allRightsReserved: 'All Rights Reserved',
     createdBy: 'Created by',
     date: 'Date',
@@ -135,11 +154,32 @@ Dental resorption is...
 
 The bilateral absence of pieces...`,
     options: [
-      { label: 'Bone resorption exposing roots of (red)', color: '#ef4444' },
-      { label: 'Dental resorption in mesial root of (orange)', color: '#f97316' },
-      { label: 'Increased ligamental space in roots of (yellow)', color: '#eab308' },
-      { label: 'without apparent radiographic alterations root ankylosis in (green)', color: '#22c55e' },
-      { label: 'Finding in (blue)', color: '#275BF5' }
+      { label: 'Severe bone resorption exposing the roots of (red)', color: '#ef4444' },
+      { label: 'Dental root resorption in (orange)', color: '#f97316' },
+      { label: 'Widening of the periodontal ligament space in (yellow)', color: '#eab308' },
+      { label: 'Density alterations (green) No apparent radiographic abnormalities in', color: '#22c55e' },
+      { label: '(Post-extraction) alveolar bone of . Area where the crowns were located (blue)', color: '#275BF5' }
+    ],
+    treatmentSuggestions: [
+      'Exodontia (extraction) of teeth with irreversible damage.',
+      'Radiographic monitoring of viable teeth and dental prophylaxis with enamel polishing every 6 months or annually.',
+      'Daily use of MaxiGuard® (vitamin C powder formulation), applying one drop to the gingiva of each maxillary canine to prevent plaque accumulation and control gingival inflammation.'
+    ],
+    commentSuggestions: [
+      'Teeth with irreversible lesions were extracted, as they caused a highly painful inflammatory response and predisposed the patient to dental endocarditis or renal failure due to bacterial colonization.',
+      'The bilateral absence of teeth such as 110 and 210, 411 and 311 is a common finding that, in the absence of chronic periodontal disease, usually indicates congenital absence; no medical intervention is required.',
+      'Dental ankylosis is a common condition in geriatric patients, in which, over time, the periodontal ligament is replaced by bone-like tissue, permanently fixing the root to the alveolus. Unless there is apical pathology or evident bone resorption, extraction is not indicated, as these teeth are not considered a source of pain and their removal is more complex.',
+      'Gingival hyperplasia and gingival recession are responses to the presence of bacterial plaque. Dental prophylaxis improves periodontal health; however, daily oral hygiene through tooth brushing is required. Alternatively, daily use of MaxiGuard® Gel combined with periodic dental prophylaxis can help stop lesion progression and preserve the affected teeth.',
+      'Teeth 105, 205, 406, 405, 305, and 306 are not present in cats; their absence in the report is normal.',
+      'Feline tooth resorption and gingivostomatitis are painful conditions whose etiology remains unknown; however, it has been reported that cats subjected to chronic stress show worsening clinical signs. Considering multi-cat households as a stress factor, gingivostomatitis is more frequently reported in such environments. Reducing stress levels at home, along with other treatments, helps decrease oral lesions in affected patients.',
+      'The desensitizing varnish was applied due to the extensive root exposure. These teeth are hypersensitive to contact with water, saliva, and food.',
+      'It provides a temporary analgesic effect on dentin for approximately 30 days; however, it is not a definitive treatment, as it does not address the underlying infection or prevent ongoing bone resorption.',
+      'All dogs and cats under human care and fed a diet different from their species-specific diet (whole prey on natural ground) should have a daily tooth-brushing routine to prevent bacterial plaque accumulation and thereby reduce the risk of periodontal disease.',
+      'If this is not done, periodic dental prophylaxis (including enamel polishing) will be required, which may be performed every 6 months or annually, depending on the individual oral health status.',
+      'It is preferable to offer dry kibble of the largest size possible, as this encourages the use of the jaw and teeth to crush the food before swallowing. This chewing action produces healthy friction on the enamel, unlike soft or pasty foods that tend to become trapped between the teeth.',
+      'When a patient no longer has teeth for chewing, they may comfortably swallow kibble whole; these diets are formulated to be consumed in this way and to be efficiently digested even without chewing. Softening the diet by any method is never recommended.',
+      'Bones should never be offered to dogs, as they cause unnecessary dental enamel wear, and in the presence of periodontal disease or in young teeth, they may lead to dental fractures. Likewise, hard materials such as wood, rigid plastics, or excessively hard chew toys should be avoided due to the risk of dental damage.',
+      'The only toys recommended for unsupervised chewing are braided or knotted nylon ropes and plush toys specifically manufactured for dogs. Soft rubber balls are ideal for interactive play.'
     ]
   }
 };
@@ -161,6 +201,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   const [clinicalHistory, setClinicalHistory] = useState('');
   const [recommendedTreatment, setRecommendedTreatment] = useState('');
   const [otherComments, setOtherComments] = useState('');
+  const [procedureDate, setProcedureDate] = useState('');
 
   // Current Item Form
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -192,6 +233,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
           setClinicalHistory(existing.clinicalHistory || '');
           setRecommendedTreatment(existing.recommendedTreatment || '');
           setOtherComments(existing.otherComments || '');
+          setProcedureDate(existing.date ? existing.date.split('T')[0] : new Date().toISOString().split('T')[0]);
           const items = await DB.getReportItems(reportId);
           setReportItems(items);
         }
@@ -204,6 +246,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     if (!selectedPetId) return;
     const report = DB.createReport(selectedPetId, language);
     setCurrentReport(report);
+    setProcedureDate(report.date ? report.date.split('T')[0] : new Date().toISOString().split('T')[0]);
     setReportItems([]);
     setClinicalHistory('');
     setRecommendedTreatment(t.defaultTreatment);
@@ -455,6 +498,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     if (!currentReport) return;
     const reportToSave = {
       ...currentReport,
+      date: procedureDate ? new Date(procedureDate + 'T12:00:00').toISOString() : currentReport.date,
       clinicalHistory,
       recommendedTreatment,
       otherComments
@@ -644,7 +688,11 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     if (!currentReport) return;
 
     const pet = pets.find(p => p.id === selectedPetId);
-    const htmlContent = generateReportHTML(pet, currentReport, reportItems, clinicalHistory, recommendedTreatment, otherComments);
+    const reportToUse = {
+      ...currentReport,
+      date: procedureDate ? new Date(procedureDate + 'T12:00:00').toISOString() : currentReport.date
+    };
+    const htmlContent = generateReportHTML(pet, reportToUse, reportItems, clinicalHistory, recommendedTreatment, otherComments);
 
     const opt = {
       margin: 10,
@@ -661,7 +709,11 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     if (!currentReport) return;
 
     const pet = pets.find(p => p.id === selectedPetId);
-    const htmlContent = generateReportHTML(pet, currentReport, reportItems, clinicalHistory, recommendedTreatment, otherComments);
+    const reportToUse = {
+      ...currentReport,
+      date: procedureDate ? new Date(procedureDate + 'T12:00:00').toISOString() : currentReport.date
+    };
+    const htmlContent = generateReportHTML(pet, reportToUse, reportItems, clinicalHistory, recommendedTreatment, otherComments);
 
     const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -784,7 +836,13 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
           </button>
           <div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t.title}: {selectedPet?.name}</h2>
-            <p className="text-slate-500 dark:text-slate-400">{language === 'es' ? 'Clínica' : 'Clinic'}: {selectedPet?.clinicName} | {new Date(currentReport.date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US')}</p>
+            <p className="text-slate-500 dark:text-slate-400">
+              {language === 'es' ? 'Clínica' : 'Clinic'}: {selectedPet?.clinicName} | {
+                procedureDate 
+                  ? new Date(procedureDate + 'T12:00:00').toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US') 
+                  : new Date(currentReport.date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US')
+              }
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -844,6 +902,23 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
+          {/* Procedure Date Section */}
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
+            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
+              <Calendar className="w-4 h-4" />
+              {language === 'es' ? 'Fecha del procedimiento' : 'Procedure Date'}
+            </div>
+            <input
+              type="date"
+              className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white transition-all font-medium"
+              value={procedureDate}
+              onChange={e => {
+                setProcedureDate(e.target.value);
+                setHasUnsavedChanges(true);
+              }}
+            />
+          </div>
+
           {/* Historia Clínica Section */}
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4 transition-all">
             <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-bold uppercase text-xs tracking-wider">
@@ -1046,6 +1121,31 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
               value={recommendedTreatment}
               onChange={e => { setRecommendedTreatment(e.target.value); setHasUnsavedChanges(true); }}
             />
+            <div className="flex flex-col gap-2 pt-1">
+              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 w-full mb-1">
+                {language === 'es' ? 'Sugerencias rápidas (haga clic para agregar):' : 'Quick suggestions (click to add):'}
+              </span>
+              <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1">
+                {(t as any).treatmentSuggestions?.map((sug: string, i: number) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setRecommendedTreatment(prev => {
+                        if (!prev.trim()) return sug;
+                        if (prev.includes(sug)) return prev;
+                        return `${prev}\n\n${sug}`;
+                      });
+                      setHasUnsavedChanges(true);
+                    }}
+                    className="text-xs text-left bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-150 dark:border-slate-700/60 rounded-xl p-2.5 transition-all w-full hover:border-slate-350 dark:hover:border-slate-600"
+                    title={sug}
+                  >
+                    {sug}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Otros Comentarios Section */}
@@ -1060,6 +1160,31 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
               value={otherComments}
               onChange={e => { setOtherComments(e.target.value); setHasUnsavedChanges(true); }}
             />
+            <div className="flex flex-col gap-2 pt-1">
+              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 w-full mb-1">
+                {language === 'es' ? 'Sugerencias rápidas (haga clic para agregar):' : 'Quick suggestions (click to add):'}
+              </span>
+              <div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-1">
+                {(t as any).commentSuggestions?.map((sug: string, i: number) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setOtherComments(prev => {
+                        if (!prev.trim()) return sug;
+                        if (prev.includes(sug)) return prev;
+                        return `${prev}\n\n${sug}`;
+                      });
+                      setHasUnsavedChanges(true);
+                    }}
+                    className="text-xs text-left bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-400 border border-slate-150 dark:border-slate-700/60 rounded-xl p-2.5 transition-all w-full line-clamp-2 hover:border-slate-350 dark:hover:border-slate-600"
+                    title={sug}
+                  >
+                    {sug}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
