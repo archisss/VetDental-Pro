@@ -11,7 +11,7 @@ interface NavigationProps {
 const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange, onLogout }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'patients', label: 'Usuario y Mascota', icon: Users },
+    { id: 'patients', label: 'Clínica y Paciente', icon: Users },
     { id: 'appointments', label: 'Agenda de Citas', icon: CalendarDays },
     { id: 'report-builder', label: 'Generar Reporte', icon: FilePlus2 },
     { id: 'history', label: 'Historial', icon: History },

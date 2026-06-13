@@ -28,6 +28,25 @@ export const DB = {
     });
     return res.json();
   },
+  updatePet: async (id: string, pet: Omit<Pet, 'id' | 'createdAt'>): Promise<Pet> => {
+    const res = await fetch(`${API_BASE}/pets/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(pet)
+    });
+    return res.json();
+  },
+  deletePet: async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API_BASE}/pets/${id}`, {
+        method: 'DELETE'
+      });
+      return res.ok;
+    } catch (e) {
+      console.error('Error deleting pet:', e);
+      return false;
+    }
+  },
 
   // Reports
   getReports: async (): Promise<DentalReport[]> => {

@@ -2,18 +2,27 @@
 import React, { useState, useEffect } from 'react';
 import { DB } from '../services/db';
 import { Pet, PetType, SkullType } from '../types';
-import { Plus, Search, UserPlus } from 'lucide-react';
+import { Plus, Search, UserPlus, Edit, Trash2 } from 'lucide-react';
 
 const PatientManagement: React.FC = () => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingPetId, setEditingPetId] = useState<string | null>(null);
+  const [petToDelete, setPetToDelete] = useState<string | null>(null);
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    clinicName: string;
+    name: string;
+    breed: string;
+    age: number | '';
+    type: PetType;
+    skullType: SkullType;
+  }>({
     clinicName: '',
     name: '',
     breed: '',
-    age: 0,
+    age: '',
     type: PetType.CANINE,
     skullType: SkullType.MESOCEPHALIC
   });
@@ -28,15 +37,52 @@ const PatientManagement: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await DB.savePet(formData);
+    const petData = {
+      ...formData,
+      age: formData.age === '' ? 0 : Number(formData.age)
+    };
+    
+    if (editingPetId) {
+      await DB.updatePet(editingPetId, petData);
+    } else {
+      await DB.savePet(petData);
+    }
+    
     const updatedPets = await DB.getPets();
     setPets(updatedPets);
     setIsAdding(false);
+    setEditingPetId(null);
     setFormData({
       clinicName: '',
       name: '',
       breed: '',
-      age: 0,
+      age: '',
+      type: PetType.CANINE,
+      skullType: SkullType.MESOCEPHALIC
+    });
+  };
+
+  const handleEditClick = (pet: Pet) => {
+    setEditingPetId(pet.id);
+    setFormData({
+      clinicName: pet.clinicName,
+      name: pet.name,
+      breed: pet.breed || '',
+      age: pet.age === 0 ? '' : pet.age,
+      type: pet.type,
+      skullType: pet.skullType
+    });
+    setIsAdding(true);
+  };
+
+  const handleCancel = () => {
+    setIsAdding(false);
+    setEditingPetId(null);
+    setFormData({
+      clinicName: '',
+      name: '',
+      breed: '',
+      age: '',
       type: PetType.CANINE,
       skullType: SkullType.MESOCEPHALIC
     });
@@ -62,6 +108,9 @@ const PatientManagement: React.FC = () => {
 
       {isAdding && (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">
+            {editingPetId ? 'Editar Información del Paciente' : 'Nuevo Paciente'}
+          </h3>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Clínica Veterinaria</label>
@@ -119,13 +168,14 @@ const PatientManagement: React.FC = () => {
                 type="number"
                 className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white"
                 value={formData.age}
-                onChange={e => setFormData({ ...formData, age: parseInt(e.target.value) })}
+                onChange={e => setFormData({ ...formData, age: e.target.value === '' ? '' : parseInt(e.target.value) })}
+                placeholder="Ej. 5"
               />
             </div>
             <div className="md:col-span-2 flex justify-end gap-3 mt-4">
               <button
                 type="button"
-                onClick={() => setIsAdding(false)}
+                onClick={handleCancel}
                 className="px-4 py-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg transition-colors"
               >
                 Cancelar
@@ -134,7 +184,7 @@ const PatientManagement: React.FC = () => {
                 type="submit"
                 className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 font-medium transition-colors"
               >
-                Guardar Paciente
+                {editingPetId ? 'Actualizar Información' : 'Guardar Paciente'}
               </button>
             </div>
           </form>
@@ -163,6 +213,7 @@ const PatientManagement: React.FC = () => {
                 <th className="px-6 py-3 font-semibold uppercase tracking-wider">Cráneo</th>
                 <th className="px-6 py-3 font-semibold uppercase tracking-wider">Edad</th>
                 <th className="px-6 py-3 font-semibold uppercase tracking-wider">Fecha Registro</th>
+                <th className="px-6 py-3 font-semibold uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -176,11 +227,29 @@ const PatientManagement: React.FC = () => {
                   <td className="px-6 py-4 text-slate-400 dark:text-slate-500 text-sm">
                     {new Date(pet.createdAt).toLocaleDateString()}
                   </td>
+                  <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                    <button
+                      onClick={() => handleEditClick(pet)}
+                      className="p-1 px-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-indigo-400 font-semibold transition-all inline-flex items-center gap-1 text-xs"
+                      title="Editar Paciente"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => setPetToDelete(pet.id)}
+                      className="p-1 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-rose-400 font-semibold transition-all inline-flex items-center gap-1 text-xs"
+                      title="Eliminar Paciente"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Eliminar
+                    </button>
+                  </td>
                 </tr>
               ))}
               {filteredPets.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
                     No se encontraron pacientes.
                   </td>
                 </tr>
@@ -189,6 +258,41 @@ const PatientManagement: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Delete confirmation modal */}
+      {petToDelete && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl max-w-md w-full mx-4 shadow-xl border border-slate-100 dark:border-slate-700 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-slate-950 dark:text-white">¿Eliminar paciente definitivamente?</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+              ¿Está seguro de que desea eliminar permanentemente este paciente? Esta acción no se puede deshacer y **borrará permanentemente** todo su historial clínico, reportes generados e imágenes del odontograma.
+            </p>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setPetToDelete(null)}
+                className="px-4 py-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (petToDelete) {
+                    await DB.deletePet(petToDelete);
+                    const updatedPets = await DB.getPets();
+                    setPets(updatedPets);
+                    setPetToDelete(null);
+                  }
+                }}
+                className="px-4 py-2 text-sm font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors shadow-md shadow-rose-200 dark:shadow-none"
+              >
+                Eliminar Definitivo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -159,6 +159,30 @@ app.post('/api/pets', async (req, res) => {
   }
 });
 
+app.put('/api/pets/:id', async (req, res) => {
+  try {
+    const { name, type, breed, age, clinicName, skullType } = req.body;
+    await pool.query(
+      'UPDATE pets SET name = ?, type = ?, breed = ?, age = ?, clinicName = ?, skullType = ? WHERE id = ?',
+      [name, type, breed, age, clinicName, skullType, req.params.id]
+    );
+    res.json({ id: req.params.id, name, type, breed, age, clinicName, skullType });
+  } catch (error) {
+    console.error('Error updating pet:', error);
+    res.status(500).json({ error: 'Failed to update pet' });
+  }
+});
+
+app.delete('/api/pets/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM pets WHERE id = ?', [req.params.id]);
+    res.json({ status: 'success', message: 'Pet deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting pet:', error);
+    res.status(500).json({ error: 'Failed to delete pet' });
+  }
+});
+
 // Reports
 app.get('/api/reports', async (req, res) => {
   try {
