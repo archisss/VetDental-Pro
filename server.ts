@@ -76,6 +76,7 @@ async function initDB() {
         description TEXT,
         rotation INT DEFAULT 0,
         isMirrored TINYINT(1) DEFAULT 0,
+        position INT DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (reportId) REFERENCES reports(id) ON DELETE CASCADE
       )
@@ -123,6 +124,17 @@ async function initDB() {
       }
     } catch (e) {
       console.error('Error migrating appointments table:', e);
+    }
+
+    // Migration for report_items positioning
+    try {
+      const [posCols]: any = await connection.query('SHOW COLUMNS FROM report_items LIKE "position"');
+      if (posCols.length === 0) {
+        console.log('Adding position column to report_items');
+        await connection.query('ALTER TABLE report_items ADD COLUMN position INT DEFAULT 0');
+      }
+    } catch (e) {
+      console.error('Error migrating report_items table:', e);
     }
 
     connection.release();
@@ -231,7 +243,7 @@ app.post('/api/reports', async (req, res) => {
 app.get('/api/reports/:reportId/items', async (req, res) => {
   try {
     console.log('Fetching items for report:', req.params.reportId);
-    const [rows] = await pool.query('SELECT * FROM report_items WHERE reportId = ? ORDER BY createdAt ASC', [req.params.reportId]);
+    const [rows] = await pool.query('SELECT * FROM report_items WHERE reportId = ? ORDER BY position ASC, createdAt ASC', [req.params.reportId]);
     console.log(`Found ${Array.isArray(rows) ? rows.length : 0} items`);
     res.json(rows);
   } catch (error) {
@@ -243,18 +255,35 @@ app.get('/api/reports/:reportId/items', async (req, res) => {
 app.post('/api/report-items', async (req, res) => {
   try {
     console.log('Saving report item for report:', req.body.reportId);
-    const { id, reportId, imageData, description, rotation, isMirrored } = req.body;
+    const { id, reportId, imageData, description, rotation, isMirrored, position } = req.body;
     // Convert boolean to 0/1 for MySQL
     const mirroredValue = isMirrored ? 1 : 0;
+    const positionValue = position !== undefined ? position : 0;
     
     await pool.query(
-      'INSERT INTO report_items (id, reportId, imageData, description, rotation, isMirrored) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE imageData=?, description=?, rotation=?, isMirrored=?',
-      [id, reportId, imageData, description, rotation, mirroredValue, imageData, description, rotation, mirroredValue]
+      'INSERT INTO report_items (id, reportId, imageData, description, rotation, isMirrored, position) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE imageData=?, description=?, rotation=?, isMirrored=?, position=?',
+      [id, reportId, imageData, description, rotation, mirroredValue, positionValue, imageData, description, rotation, mirroredValue, positionValue]
     );
     res.status(201).json(req.body);
   } catch (error) {
     console.error('Error saving report item:', error);
     res.status(500).json({ error: 'Failed to save report item' });
+  }
+});
+
+app.post('/api/report-items/reorder', async (req, res) => {
+  try {
+    const { items } = req.body; // array of { id, position }
+    console.log('Reordering report items:', items?.length);
+    if (Array.isArray(items)) {
+      for (const item of items) {
+        await pool.query('UPDATE report_items SET position = ? WHERE id = ?', [item.position, item.id]);
+      }
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error reordering report items:', error);
+    res.status(500).json({ error: 'Failed to reorder report items' });
   }
 });
 

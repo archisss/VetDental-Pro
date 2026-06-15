@@ -129,6 +129,19 @@ export const DB = {
     });
     return res.json();
   },
+  reorderReportItems: async (items: { id: string, position: number }[]): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API_BASE}/report-items/reorder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items })
+      });
+      return res.ok;
+    } catch (e) {
+      console.error('Error reordering items:', e);
+      return false;
+    }
+  },
   deleteReportItem: async (id: string): Promise<void> => {
     await fetch(`${API_BASE}/report-items/${id}`, {
       method: 'DELETE'

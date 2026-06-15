@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DB } from '../services/db';
 import { Pet, DentalReport, ReportItem } from '../types';
-import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser, Search, Download, Undo, Calendar } from 'lucide-react';
+import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser, Search, Download, Undo, Calendar, ArrowUp, ArrowDown } from 'lucide-react';
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
 
@@ -202,6 +202,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
   const [recommendedTreatment, setRecommendedTreatment] = useState('');
   const [otherComments, setOtherComments] = useState('');
   const [procedureDate, setProcedureDate] = useState('');
+  const [tempDateText, setTempDateText] = useState('');
 
   // Current Item Form
   const [currentImage, setCurrentImage] = useState<string | null>(null);
@@ -241,6 +242,100 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
     };
     loadData();
   }, [reportId]);
+
+  useEffect(() => {
+    if (procedureDate) {
+      const parts = procedureDate.split('-');
+      if (parts.length === 3) {
+        const [yyyy, mm, dd] = parts;
+        if (language === 'es') {
+          setTempDateText(`${dd}-${mm}-${yyyy}`);
+        } else {
+          setTempDateText(`${mm}-${dd}-${yyyy}`);
+        }
+      } else {
+        setTempDateText(procedureDate);
+      }
+    } else {
+      setTempDateText('');
+    }
+  }, [procedureDate, language]);
+
+  const handleDateTextChange = (val: string) => {
+    // Only allow numbers and dashes
+    const cleaned = val.replace(/[^0-9-]/g, '');
+    
+    // Auto-insert dashes for custom typing mask
+    let formatted = cleaned;
+    if (cleaned.length > tempDateText.length) {
+      if (cleaned.length === 2 && !cleaned.includes('-')) {
+        formatted = cleaned + '-';
+      } else if (cleaned.length === 5 && (cleaned.match(/-/g) || []).length === 1) {
+        formatted = cleaned + '-';
+      }
+    }
+    
+    const truncated = formatted.slice(0, 10);
+    setTempDateText(truncated);
+
+    // Try parsing if complete (10 characters)
+    const match = truncated.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (match) {
+      const [, p1, p2, p3] = match;
+      const d1 = parseInt(p1, 10);
+      const d2 = parseInt(p2, 10);
+      const d3 = parseInt(p3, 10);
+      
+      let yyyy = d3;
+      let mm = 0;
+      let dd = 0;
+
+      if (language === 'es') {
+        dd = d1;
+        mm = d2;
+      } else {
+        mm = d1;
+        dd = d2;
+      }
+
+      // Basic date validation
+      if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31 && yyyy >= 1000 && yyyy <= 9999) {
+        const mmStr = mm < 10 ? `0${mm}` : `${mm}`;
+        const ddStr = dd < 10 ? `0${dd}` : `${dd}`;
+        const finalDBDate = `${yyyy}-${mmStr}-${ddStr}`;
+        setProcedureDate(finalDBDate);
+        setHasUnsavedChanges(true);
+      }
+    }
+  };
+
+  const handleMoveItem = async (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === reportItems.length - 1) return;
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const updatedItems = [...reportItems];
+    
+    // Swap items
+    const temp = updatedItems[index];
+    updatedItems[index] = updatedItems[targetIndex];
+    updatedItems[targetIndex] = temp;
+
+    // Assign positions
+    const itemsWithPosition = updatedItems.map((item, idx) => ({
+      ...item,
+      position: idx
+    }));
+
+    setReportItems(itemsWithPosition);
+    setHasUnsavedChanges(true);
+
+    try {
+      await DB.reorderReportItems(itemsWithPosition.map((item, idx) => ({ id: item.id, position: idx })));
+    } catch (e) {
+      console.error('Error reordering report items:', e);
+    }
+  };
 
   const handleStartReport = () => {
     if (!selectedPetId) return;
@@ -428,13 +523,16 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
       setCurrentReport(reportToSave);
 
       const finalDescription = currentDescription.trim() || 'Sin descripción técnica.';
+      const currentEditingItem = editingItemId ? reportItems.find(it => it.id === editingItemId) : null;
+      const positionValue = currentEditingItem ? currentEditingItem.position : reportItems.length;
 
       const itemData = {
         reportId: currentReport.id,
         imageData: finalImageData,
         description: finalDescription,
         rotation: 0, // Reset rotation/mirror as they are now baked into the image
-        isMirrored: false
+        isMirrored: false,
+        position: positionValue
       };
 
       if (editingItemId) {
@@ -908,15 +1006,34 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
               <Calendar className="w-4 h-4" />
               {language === 'es' ? 'Fecha del procedimiento' : 'Procedure Date'}
             </div>
-            <input
-              type="date"
-              className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white transition-all font-medium"
-              value={procedureDate}
-              onChange={e => {
-                setProcedureDate(e.target.value);
-                setHasUnsavedChanges(true);
-              }}
-            />
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                placeholder={language === 'es' ? 'DD-MM-YYYY' : 'MM-DD-YYYY'}
+                value={tempDateText}
+                onChange={e => handleDateTextChange(e.target.value)}
+                className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 pr-12 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white transition-all font-medium"
+              />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all pointer-events-none">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <input
+                type="date"
+                value={procedureDate}
+                onChange={e => {
+                  if (e.target.value) {
+                    setProcedureDate(e.target.value);
+                    setHasUnsavedChanges(true);
+                  }
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 opacity-0 cursor-pointer"
+              />
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium pl-1">
+              {language === 'es' 
+                ? 'Escriba la fecha como DD-MM-YYYY (ej. 15-06-2026) o use el selector de calendario en el icono.' 
+                : 'Type date as MM-DD-YYYY (e.g., 06-15-2026) or use the calendar selector icon.'}
+            </p>
           </div>
 
           {/* Historia Clínica Section */}
@@ -1247,6 +1364,22 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded">{t.imageNumber} #{index + 1}</span>
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleMoveItem(index, 'up')}
+                        disabled={index === 0}
+                        className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                        title={language === 'es' ? "Mover Arriba" : "Move Up"}
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleMoveItem(index, 'down')}
+                        disabled={index === reportItems.length - 1}
+                        className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                        title={language === 'es' ? "Mover Abajo" : "Move Down"}
+                      >
+                        <ArrowDown className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleEditItem(item)}
                         className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"

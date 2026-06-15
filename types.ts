@@ -32,6 +32,7 @@ export interface ReportItem {
   description: string;
   rotation: number;
   isMirrored: boolean;
+  position?: number;
 }
 
 export interface DentalReport {
