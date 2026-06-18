@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { DB } from '../services/db';
 import { Pet, DentalReport, ReportItem } from '../types';
-import { Calendar, Eye, FileText, ChevronRight, Edit2 } from 'lucide-react';
+import { Calendar, Eye, FileText, ChevronRight, Edit2, Search, X } from 'lucide-react';
 
 interface HistoryProps {
   onEditReport: (reportId: string) => void;
@@ -30,7 +30,9 @@ const TRANSLATIONS = {
     specialistInfo: 'MVZ. Especializada en odontología veterinaria por ANCLIVEPA, Sao Paulo, Brasil.',
     credits: 'Este documento fue elaborado por <strong>Dent\'a\'Vet</strong>, Todos los Derechos reservados',
     createdBy: 'Creado por <strong>Incéntrica</strong> © 2026',
-    noFindingsExtra: 'Sin hallazgos extras para mostrar aquí'
+    noFindingsExtra: 'Sin hallazgos extras para mostrar aquí',
+    searchPlaceholder: 'Buscar paciente...',
+    noResults: 'No se encontraron pacientes'
   },
   en: {
     title: 'Dental Report History',
@@ -53,7 +55,9 @@ const TRANSLATIONS = {
     specialistInfo: 'DVM. Specialized in veterinary dentistry by ANCLIVEPA, Sao Paulo, Brazil.',
     credits: 'This document was prepared by <strong>Dent\'a\'Vet</strong>, All Rights Reserved',
     createdBy: 'Created by <strong>Incéntrica</strong> © 2026',
-    noFindingsExtra: 'No extra findings to show here'
+    noFindingsExtra: 'No extra findings to show here',
+    searchPlaceholder: 'Search patient...',
+    noResults: 'No patients found'
   }
 };
 
@@ -62,7 +66,19 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [reports, setReports] = useState<DentalReport[]>([]);
   const [language, setLanguage] = useState<'es' | 'en'>('es');
+  const [searchQuery, setSearchQuery] = useState('');
   const t = TRANSLATIONS[language];
+
+  const filteredPets = pets.filter(pet => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return (
+      pet.name.toLowerCase().includes(q) ||
+      pet.clinicName.toLowerCase().includes(q) ||
+      pet.type.toLowerCase().includes(q) ||
+      (pet.breed && pet.breed.toLowerCase().includes(q))
+    );
+  });
 
   useEffect(() => {
     const loadPets = async () => {
@@ -269,9 +285,29 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pets List */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col h-[700px] transition-all">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 font-bold text-slate-700 dark:text-slate-300 uppercase text-xs tracking-wider">{t.patients}</div>
+          <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <span className="font-bold text-slate-700 dark:text-slate-300 uppercase text-xs tracking-wider">{t.patients}</span>
+            <div className="relative flex items-center w-full sm:w-64">
+              <input
+                type="text"
+                placeholder={t.searchPlaceholder}
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-white pl-8 pr-8 py-2 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
-            {pets.map(pet => (
+            {filteredPets.map(pet => (
               <button
                 key={pet.id}
                 onClick={() => handleSelectPet(pet)}
@@ -286,8 +322,10 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
                 <ChevronRight className={`w-4 h-4 transition-colors ${selectedPet?.id === pet.id ? 'text-indigo-500' : 'text-slate-300 dark:text-slate-600'}`} />
               </button>
             ))}
-            {pets.length === 0 && (
-               <div className="p-8 text-center text-slate-400 dark:text-slate-500 italic">{t.noPatients}</div>
+            {filteredPets.length === 0 && (
+               <div className="p-8 text-center text-slate-400 dark:text-slate-500 italic">
+                 {pets.length === 0 ? t.noPatients : t.noResults}
+               </div>
             )}
           </div>
         </div>
