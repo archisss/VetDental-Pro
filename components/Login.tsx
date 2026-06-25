@@ -1,9 +1,11 @@
 
 import React, { useState } from 'react';
 import { Dog, Lock, User, ShieldCheck } from 'lucide-react';
+import { DB } from '../services/db';
+import { User as AppUser } from '../types';
 
 interface LoginProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: (user: AppUser) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
@@ -11,13 +13,18 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple mock authentication
-    if (username === 'admin' && password === 'admin') {
-      onLoginSuccess();
-    } else {
-      setError('Credenciales inválidas. Intente con admin/admin.');
+    setError('');
+    try {
+      const result = await DB.login(username, password);
+      if (result.success && result.user) {
+        onLoginSuccess(result.user);
+      } else {
+        setError(result.error || 'Usuario o contraseña incorrectos.');
+      }
+    } catch (e) {
+      setError('Error al conectar con el servidor.');
     }
   };
 

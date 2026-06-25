@@ -137,6 +137,32 @@ async function initDB() {
       console.error('Error migrating report_items table:', e);
     }
 
+    // Create users table and seed default admin
+    try {
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id VARCHAR(36) PRIMARY KEY,
+          username VARCHAR(255) UNIQUE NOT NULL,
+          password VARCHAR(255) NOT NULL,
+          role VARCHAR(50) NOT NULL DEFAULT 'assistant',
+          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      const [adminRows]: any = await connection.query('SELECT * FROM users WHERE role = "admin"');
+      if (adminRows.length === 0) {
+        console.log('Seeding default admin user');
+        // Simple random ID generation without external dependency
+        const adminId = 'admin-default-id-000000000000000000';
+        await connection.query(
+          'INSERT INTO users (id, username, password, role) VALUES (?, ?, ?, ?)',
+          [adminId, 'admin', 'admin', 'admin']
+        );
+      }
+    } catch (e) {
+      console.error('Error creating users table / seeding admin:', e);
+    }
+
     connection.release();
     console.log('Database tables initialized');
   } catch (error) {
@@ -326,6 +352,97 @@ app.delete('/api/appointments/:id', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete appointment' });
+  }
+});
+
+// Auth and Users / Assistants Management
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const [rows]: any = await pool.query('SELECT * FROM users WHERE username = ? AND password = ?', [username, password]);
+    if (rows.length > 0) {
+      const user = rows[0];
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        }
+      });
+    } else {
+      res.status(401).json({ success: false, error: 'Credenciales inválidas.' });
+    }
+  } catch (error) {
+    console.error('Error logging in:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+app.post('/api/auth/change-password', async (req, res) => {
+  try {
+    const { username, currentPassword, newPassword } = req.body;
+    const [rows]: any = await pool.query('SELECT * FROM users WHERE username = ? AND password = ?', [username, currentPassword]);
+    if (rows.length > 0) {
+      await pool.query('UPDATE users SET password = ? WHERE username = ?', [newPassword, username]);
+      res.json({ success: true });
+    } else {
+      res.status(400).json({ success: false, error: 'Contraseña actual incorrecta.' });
+    }
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+app.get('/api/assistants', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT id, username, password, role, createdAt FROM users WHERE role = "assistant" ORDER BY createdAt DESC');
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching assistants:', error);
+    res.status(500).json({ error: 'Failed to fetch assistants' });
+  }
+});
+
+app.post('/api/assistants', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    // Check if username already exists
+    const [existing]: any = await pool.query('SELECT id FROM users WHERE username = ?', [username]);
+    if (existing.length > 0) {
+      return res.status(400).json({ error: 'El nombre de usuario ya existe' });
+    }
+    const id = 'ast-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    await pool.query(
+      'INSERT INTO users (id, username, password, role) VALUES (?, ?, ?, "assistant")',
+      [id, username, password]
+    );
+    res.status(201).json({ id, username, password, role: 'assistant' });
+  } catch (error) {
+    console.error('Error creating assistant:', error);
+    res.status(500).json({ error: 'Failed to create assistant' });
+  }
+});
+
+app.put('/api/assistants/:id', async (req, res) => {
+  try {
+    const { password } = req.body;
+    await pool.query('UPDATE users SET password = ? WHERE id = ?', [password, req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating assistant:', error);
+    res.status(500).json({ error: 'Failed to update assistant' });
+  }
+});
+
+app.delete('/api/assistants/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM users WHERE id = ?', [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting assistant:', error);
+    res.status(500).json({ error: 'Failed to delete assistant' });
   }
 });
 

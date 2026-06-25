@@ -1,5 +1,5 @@
 
-import { Pet, DentalReport, ReportItem, Appointment } from '../types';
+import { Pet, DentalReport, ReportItem, Appointment, User } from '../types';
 
 const API_BASE = '/api';
 
@@ -176,5 +176,92 @@ export const DB = {
     await fetch(`${API_BASE}/appointments/${id}`, {
       method: 'DELETE'
     });
+  },
+  
+  // Auth & Assistants
+  login: async (username: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        return { success: true, user: data.user };
+      }
+      return { success: false, error: data.error || 'Credenciales inválidas' };
+    } catch (e) {
+      console.error('Error in login:', e);
+      return { success: false, error: 'Error de red al intentar iniciar sesión' };
+    }
+  },
+  changePassword: async (username: string, currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, currentPassword, newPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        return { success: true };
+      }
+      return { success: false, error: data.error || 'No se pudo cambiar la contraseña' };
+    } catch (e) {
+      console.error('Error changing password:', e);
+      return { success: false, error: 'Error de red' };
+    }
+  },
+  getAssistants: async (): Promise<User[]> => {
+    try {
+      const res = await fetch(`${API_BASE}/assistants`);
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error('Error fetching assistants:', e);
+      return [];
+    }
+  },
+  createAssistant: async (username: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> => {
+    try {
+      const res = await fetch(`${API_BASE}/assistants`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        return { success: true, user: data };
+      }
+      return { success: false, error: data.error || 'No se pudo crear el ayudante' };
+    } catch (e) {
+      console.error('Error creating assistant:', e);
+      return { success: false, error: 'Error de red' };
+    }
+  },
+  updateAssistant: async (id: string, password: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API_BASE}/assistants/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      return res.ok;
+    } catch (e) {
+      console.error('Error updating assistant:', e);
+      return false;
+    }
+  },
+  deleteAssistant: async (id: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`${API_BASE}/assistants/${id}`, {
+        method: 'DELETE'
+      });
+      return res.ok;
+    } catch (e) {
+      console.error('Error deleting assistant:', e);
+      return false;
+    }
   }
 };

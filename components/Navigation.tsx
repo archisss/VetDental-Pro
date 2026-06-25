@@ -1,14 +1,16 @@
 
 import React from 'react';
-import { LayoutDashboard, Users, FilePlus2, History, LogOut, Dog, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, Users, FilePlus2, History, LogOut, Dog, CalendarDays, ShieldCheck } from 'lucide-react';
+import { User as AppUser } from '../types';
 
 interface NavigationProps {
   currentTab: string;
   onTabChange: (tab: string) => void;
   onLogout: () => void;
+  currentUser: AppUser | null;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange, onLogout }) => {
+const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange, onLogout, currentUser }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'patients', label: 'Clínica y Paciente', icon: Users },
@@ -16,6 +18,10 @@ const Navigation: React.FC<NavigationProps> = ({ currentTab, onTabChange, onLogo
     { id: 'report-builder', label: 'Generar Reporte', icon: FilePlus2 },
     { id: 'history', label: 'Historial', icon: History },
   ];
+
+  if (currentUser?.role === 'admin') {
+    navItems.push({ id: 'administration', label: 'Administración', icon: ShieldCheck });
+  }
 
   return (
     <nav className="w-64 bg-white dark:bg-slate-800 h-screen border-r border-slate-200 dark:border-slate-700 flex flex-col fixed left-0 top-0 transition-colors duration-300 z-50">

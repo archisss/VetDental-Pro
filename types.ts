@@ -60,5 +60,6 @@ export interface Appointment {
 export interface User {
   id: string;
   username: string;
-  role: 'admin' | 'veterinarian';
+  role: 'admin' | 'assistant';
+  password?: string;
 }

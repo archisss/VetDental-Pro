@@ -7,11 +7,14 @@ import PatientManagement from './components/PatientManagement';
 import ReportBuilder from './components/ReportBuilder';
 import History from './components/History';
 import AppointmentManagement from './components/AppointmentManagement';
+import Administration from './components/Administration';
+import { User as AppUser } from './types';
 
 export type Theme = 'light' | 'dark' | 'system';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [editingReportId, setEditingReportId] = useState<string | null>(null);
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('vet_dental_theme') as Theme) || 'system');
@@ -41,7 +44,14 @@ const App: React.FC = () => {
   }, [theme]);
 
   if (!isAuthenticated) {
-    return <Login onLoginSuccess={() => setIsAuthenticated(true)} />;
+    return (
+      <Login 
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+          setIsAuthenticated(true);
+        }} 
+      />
+    );
   }
 
   const handleEditReport = (reportId: string) => {
@@ -54,6 +64,11 @@ const App: React.FC = () => {
       setEditingReportId(null);
     }
     setCurrentTab(tab);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setIsAuthenticated(false);
   };
 
   const renderContent = () => {
@@ -73,6 +88,11 @@ const App: React.FC = () => {
         );
       case 'history': 
         return <History onEditReport={handleEditReport} />;
+      case 'administration':
+        if (currentUser?.role === 'admin') {
+          return <Administration currentUser={currentUser} />;
+        }
+        return <Dashboard currentTheme={theme} onThemeChange={setTheme} />;
       default: return <Dashboard currentTheme={theme} onThemeChange={setTheme} />;
     }
   };
@@ -82,7 +102,8 @@ const App: React.FC = () => {
       <Navigation 
         currentTab={currentTab} 
         onTabChange={handleTabChange} 
-        onLogout={() => setIsAuthenticated(false)}
+        onLogout={handleLogout}
+        currentUser={currentUser}
       />
       <main className="flex-1 ml-64 p-10 max-w-[1400px] mx-auto">
         {renderContent()}
