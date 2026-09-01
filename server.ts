@@ -16,6 +16,8 @@ const PORT = Number(process.env.PORT) || 3000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
+import { executeLocalQuery } from './services/localDb';
+
 // Database connection pool
 const dbConfig = {
   host: process.env.MYSQL_HOST,
@@ -25,16 +27,64 @@ const dbConfig = {
   port: Number(process.env.MYSQL_PORT) || 3306,
 };
 
+let useLocalFallback = false;
+
 if (!dbConfig.host || !dbConfig.user || !dbConfig.database) {
-  console.warn('⚠️  Database environment variables are missing. Defaulting to localhost (this will fail in production).');
+  console.warn('⚠️  Database environment variables are missing. Defaulting to local JSON database.');
+  useLocalFallback = true;
 }
 
-const pool = mysql.createPool({
+const mysqlPool = mysql.createPool({
   ...dbConfig,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
+
+const pool = {
+  async query(sql: string, params?: any[]): Promise<[any, any]> {
+    if (useLocalFallback) {
+      return executeLocalQuery(sql, params);
+    }
+    try {
+      return await mysqlPool.query(sql, params);
+    } catch (err: any) {
+      console.error('MySQL query error, falling back to local JSON database. Error:', err.message);
+      useLocalFallback = true;
+      return executeLocalQuery(sql, params);
+    }
+  },
+  async getConnection(): Promise<any> {
+    if (useLocalFallback) {
+      return {
+        query: async (sql: string, params?: any[]) => executeLocalQuery(sql, params),
+        release: () => {}
+      };
+    }
+    try {
+      const conn = await mysqlPool.getConnection();
+      return {
+        query: async (sql: string, params?: any[]) => {
+          try {
+            return await conn.query(sql, params);
+          } catch (err: any) {
+            console.error('Connection query error, falling back to local:', err.message);
+            useLocalFallback = true;
+            return executeLocalQuery(sql, params);
+          }
+        },
+        release: () => conn.release()
+      };
+    } catch (err: any) {
+      console.error('MySQL pool.getConnection failed, falling back to local JSON database. Error:', err.message);
+      useLocalFallback = true;
+      return {
+        query: async (sql: string, params?: any[]) => executeLocalQuery(sql, params),
+        release: () => {}
+      };
+    }
+  }
+};
 
 // Initialize database tables
 async function initDB() {
@@ -48,7 +98,8 @@ async function initDB() {
         name VARCHAR(255) NOT NULL,
         type VARCHAR(50) NOT NULL,
         breed VARCHAR(255),
-        age INT,
+        age INT DEFAULT 0,
+        ageMonths INT DEFAULT 0,
         clinicName VARCHAR(255) NOT NULL,
         skullType VARCHAR(50),
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -96,6 +147,13 @@ async function initDB() {
       if (skullCols.length === 0) {
         console.log('Adding skullType column to pets');
         await connection.query('ALTER TABLE pets ADD COLUMN skullType VARCHAR(50)');
+      }
+
+      // Check if ageMonths exists
+      const [monthCols]: any = await connection.query('SHOW COLUMNS FROM pets LIKE "ageMonths"');
+      if (monthCols.length === 0) {
+        console.log('Adding ageMonths column to pets');
+        await connection.query('ALTER TABLE pets ADD COLUMN ageMonths INT DEFAULT 0');
       }
     } catch (e) {
       console.error('Error migrating pets table:', e);
@@ -185,12 +243,14 @@ app.get('/api/pets', async (req, res) => {
 
 app.post('/api/pets', async (req, res) => {
   try {
-    const { id, name, type, breed, age, clinicName, skullType } = req.body;
+    const { id, name, type, breed, age, ageMonths, clinicName, skullType } = req.body;
+    const safeAge = age !== undefined && age !== '' && age !== null ? Number(age) : 0;
+    const safeMonths = ageMonths !== undefined && ageMonths !== '' && ageMonths !== null ? Number(ageMonths) : 0;
     await pool.query(
-      'INSERT INTO pets (id, name, type, breed, age, clinicName, skullType) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [id, name, type, breed, age, clinicName, skullType]
+      'INSERT INTO pets (id, name, type, breed, age, ageMonths, clinicName, skullType) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, name, type, breed, safeAge, safeMonths, clinicName, skullType]
     );
-    res.status(201).json(req.body);
+    res.status(201).json({ id, name, type, breed, age: safeAge, ageMonths: safeMonths, clinicName, skullType });
   } catch (error) {
     console.error('Error saving pet:', error);
     res.status(500).json({ error: 'Failed to save pet' });
@@ -199,12 +259,14 @@ app.post('/api/pets', async (req, res) => {
 
 app.put('/api/pets/:id', async (req, res) => {
   try {
-    const { name, type, breed, age, clinicName, skullType } = req.body;
+    const { name, type, breed, age, ageMonths, clinicName, skullType } = req.body;
+    const safeAge = age !== undefined && age !== '' && age !== null ? Number(age) : 0;
+    const safeMonths = ageMonths !== undefined && ageMonths !== '' && ageMonths !== null ? Number(ageMonths) : 0;
     await pool.query(
-      'UPDATE pets SET name = ?, type = ?, breed = ?, age = ?, clinicName = ?, skullType = ? WHERE id = ?',
-      [name, type, breed, age, clinicName, skullType, req.params.id]
+      'UPDATE pets SET name = ?, type = ?, breed = ?, age = ?, ageMonths = ?, clinicName = ?, skullType = ? WHERE id = ?',
+      [name, type, breed, safeAge, safeMonths, clinicName, skullType, req.params.id]
     );
-    res.json({ id: req.params.id, name, type, breed, age, clinicName, skullType });
+    res.json({ id: req.params.id, name, type, breed, age: safeAge, ageMonths: safeMonths, clinicName, skullType });
   } catch (error) {
     console.error('Error updating pet:', error);
     res.status(500).json({ error: 'Failed to update pet' });

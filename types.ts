@@ -19,10 +19,44 @@ export interface Pet {
   clinicName: string; // Formerly ownerName
   name: string;
   breed: string;
-  age: number;
+  age: number; // Años
+  ageMonths?: number; // Meses (por defecto 0)
   type: PetType;
   skullType: SkullType;
   createdAt: string;
+}
+
+export function formatPetAge(age: number | undefined = 0, ageMonths: number | undefined = 0, lang: 'es' | 'en' = 'es'): string {
+  const years = Math.max(0, Number(age) || 0);
+  const months = Math.max(0, Number(ageMonths) || 0);
+
+  if (lang === 'en') {
+    const yearStr = years === 1 ? '1 year' : `${years} years`;
+    const monthStr = months === 1 ? '1 month' : `${months} months`;
+
+    if (years > 0 && months > 0) {
+      return `${yearStr} and ${monthStr}`;
+    } else if (years > 0) {
+      return yearStr;
+    } else if (months > 0) {
+      return monthStr;
+    } else {
+      return '0 years';
+    }
+  } else {
+    const yearStr = years === 1 ? '1 año' : `${years} años`;
+    const monthStr = months === 1 ? '1 mes' : `${months} meses`;
+
+    if (years > 0 && months > 0) {
+      return `${yearStr} y ${monthStr}`;
+    } else if (years > 0) {
+      return yearStr;
+    } else if (months > 0) {
+      return monthStr;
+    } else {
+      return '0 años';
+    }
+  }
 }
 
 export interface ReportItem {

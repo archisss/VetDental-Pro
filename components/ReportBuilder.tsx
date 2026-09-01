@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { DB } from '../services/db';
-import { Pet, DentalReport, ReportItem } from '../types';
+import { Pet, DentalReport, ReportItem, formatPetAge } from '../types';
 import { ImagePlus, RotateCcw, FlipHorizontal, Save, FileText, CheckCircle2, ArrowLeft, Eye, Check, ClipboardList, Stethoscope, MessageSquare, Edit, Trash2, X, Pencil, Eraser, Search, Download, Undo, Calendar, ArrowUp, ArrowDown } from 'lucide-react';
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
@@ -26,7 +26,7 @@ const TRANSLATIONS = {
     otherComments: 'Otros Comentarios',
     visualFindings: 'Imágenes y Hallazgos Visuales',
     technicalDescription: 'Descripción Técnica',
-    noDescription: 'Sin descripción técnica.',
+    noDescription: 'Sin radiografías/fotografías extra para reportar',
     createdThrough: 'Este documento fue elaborado por',
     allRightsReserved: 'Todos los Derechos reservados',
     createdBy: 'Creado por',
@@ -109,7 +109,7 @@ La ausencia bilateral de piezas...`,
     otherComments: 'Other Comments',
     visualFindings: 'Images and Visual Findings',
     technicalDescription: 'Technical Description',
-    noDescription: 'No technical description.',
+    noDescription: 'Sin radiografías/fotografías extra para reportar',
     createdThrough: 'This document was prepared by',
     allRightsReserved: 'All Rights Reserved',
     createdBy: 'Created by',
@@ -522,7 +522,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
       await DB.saveReport(reportToSave);
       setCurrentReport(reportToSave);
 
-      const finalDescription = currentDescription.trim() || 'Sin descripción técnica.';
+      const finalDescription = currentDescription.trim() || t.noDescription;
       const currentEditingItem = editingItemId ? reportItems.find(it => it.id === editingItemId) : null;
       const positionValue = currentEditingItem ? currentEditingItem.position : reportItems.length;
 
@@ -697,7 +697,7 @@ const ReportBuilder: React.FC<ReportBuilderProps> = ({ reportId, onClose }) => {
                     };
                     return map[val] || val;
                   };
-                  return `${translate(pet?.type, language)} | ${translate(pet?.breed, language)} | ${t.skull}: ${translate(pet?.skullType, language)} | ${t.age}: ${pet?.age} ${t.years}`;
+                  return `${translate(pet?.type, language)} | ${translate(pet?.breed, language)} | ${t.skull}: ${translate(pet?.skullType, language)} | ${t.age}: ${formatPetAge(pet?.age, pet?.ageMonths, language)}`;
                 })()}
               </span>
             </div>

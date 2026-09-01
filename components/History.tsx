@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { DB } from '../services/db';
-import { Pet, DentalReport, ReportItem } from '../types';
+import { Pet, DentalReport, ReportItem, formatPetAge } from '../types';
 import { Calendar, Eye, FileText, ChevronRight, Edit2, Search, X } from 'lucide-react';
 
 interface HistoryProps {
@@ -24,7 +24,7 @@ const TRANSLATIONS = {
     patient: 'Paciente',
     clinicalHistory: 'Historia Clínica',
     visualFindings: 'Imágenes y Hallazgos Visuales',
-    noDescription: 'Sin descripción técnica.',
+    noDescription: 'Sin radiografías/fotografías extra para reportar',
     recommendedTreatment: 'Tratamiento Recomendado',
     additionalObservations: 'Observaciones Adicionales',
     specialistInfo: 'MVZ. Especializada en odontología veterinaria por ANCLIVEPA, Sao Paulo, Brasil.',
@@ -49,7 +49,7 @@ const TRANSLATIONS = {
     patient: 'Patient',
     clinicalHistory: 'Clinical History',
     visualFindings: 'Images and Visual Findings',
-    noDescription: 'No technical description.',
+    noDescription: 'Sin radiografías/fotografías extra para reportar',
     recommendedTreatment: 'Recommended Treatment',
     additionalObservations: 'Additional Observations',
     specialistInfo: 'DVM. Specialized in veterinary dentistry by ANCLIVEPA, Sao Paulo, Brazil.',
@@ -188,7 +188,7 @@ const History: React.FC<HistoryProps> = ({ onEditReport }) => {
                     };
                     return map[val] || val;
                   };
-                  return `${translate(selectedPet.type, reportLang)} | ${translate(selectedPet.breed, reportLang)} | ${reportLang === 'es' ? 'Cráneo' : 'Skull'}: ${translate(selectedPet.skullType, reportLang)} | ${reportLang === 'es' ? 'Edad' : 'Age'}: ${selectedPet.age} ${reportLang === 'es' ? 'años' : 'years'}`;
+                  return `${translate(selectedPet.type, reportLang)} | ${translate(selectedPet.breed, reportLang)} | ${reportLang === 'es' ? 'Cráneo' : 'Skull'}: ${translate(selectedPet.skullType, reportLang)} | ${reportLang === 'es' ? 'Edad' : 'Age'}: ${formatPetAge(selectedPet.age, selectedPet.ageMonths, reportLang)}`;
                 })()}
               </span>
             </div>

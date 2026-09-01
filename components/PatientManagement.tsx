@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { DB } from '../services/db';
-import { Pet, PetType, SkullType } from '../types';
+import { Pet, PetType, SkullType, formatPetAge } from '../types';
 import { Plus, Search, UserPlus, Edit, Trash2 } from 'lucide-react';
 
 const PatientManagement: React.FC = () => {
@@ -16,6 +16,7 @@ const PatientManagement: React.FC = () => {
     name: string;
     breed: string;
     age: number | '';
+    ageMonths: number | '';
     type: PetType;
     skullType: SkullType;
   }>({
@@ -23,6 +24,7 @@ const PatientManagement: React.FC = () => {
     name: '',
     breed: '',
     age: '',
+    ageMonths: '',
     type: PetType.CANINE,
     skullType: SkullType.MESOCEPHALIC
   });
@@ -39,7 +41,8 @@ const PatientManagement: React.FC = () => {
     e.preventDefault();
     const petData = {
       ...formData,
-      age: formData.age === '' ? 0 : Number(formData.age)
+      age: formData.age === '' ? 0 : Number(formData.age),
+      ageMonths: formData.ageMonths === '' ? 0 : Number(formData.ageMonths)
     };
     
     if (editingPetId) {
@@ -57,6 +60,7 @@ const PatientManagement: React.FC = () => {
       name: '',
       breed: '',
       age: '',
+      ageMonths: '',
       type: PetType.CANINE,
       skullType: SkullType.MESOCEPHALIC
     });
@@ -68,7 +72,8 @@ const PatientManagement: React.FC = () => {
       clinicName: pet.clinicName,
       name: pet.name,
       breed: pet.breed || '',
-      age: pet.age === 0 ? '' : pet.age,
+      age: pet.age === 0 && (pet.ageMonths || 0) > 0 ? 0 : (pet.age === 0 ? '' : pet.age),
+      ageMonths: (pet.ageMonths === 0 || pet.ageMonths === undefined) ? '' : pet.ageMonths,
       type: pet.type,
       skullType: pet.skullType
     });
@@ -83,6 +88,7 @@ const PatientManagement: React.FC = () => {
       name: '',
       breed: '',
       age: '',
+      ageMonths: '',
       type: PetType.CANINE,
       skullType: SkullType.MESOCEPHALIC
     });
@@ -164,13 +170,31 @@ const PatientManagement: React.FC = () => {
             </div>
             <div className="space-y-1">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Edad</label>
-              <input
-                type="number"
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white"
-                value={formData.age}
-                onChange={e => setFormData({ ...formData, age: e.target.value === '' ? '' : parseInt(e.target.value) })}
-                placeholder="Ej. 5"
-              />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <input
+                    type="number"
+                    min="0"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white"
+                    value={formData.age}
+                    onChange={e => setFormData({ ...formData, age: e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0) })}
+                    placeholder="Ej. 1"
+                  />
+                  <span className="text-xs text-slate-400 dark:text-slate-500 mt-1 block">Años</span>
+                </div>
+                <div>
+                  <input
+                    type="number"
+                    min="0"
+                    max="11"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white"
+                    value={formData.ageMonths}
+                    onChange={e => setFormData({ ...formData, ageMonths: e.target.value === '' ? '' : Math.min(11, Math.max(0, parseInt(e.target.value) || 0)) })}
+                    placeholder="Ej. 3"
+                  />
+                  <span className="text-xs text-slate-400 dark:text-slate-500 mt-1 block">Meses (0-11)</span>
+                </div>
+              </div>
             </div>
             <div className="md:col-span-2 flex justify-end gap-3 mt-4">
               <button
@@ -223,7 +247,7 @@ const PatientManagement: React.FC = () => {
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{pet.clinicName}</td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{pet.type} / {pet.breed}</td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{pet.skullType}</td>
-                  <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{pet.age} años</td>
+                  <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{formatPetAge(pet.age, pet.ageMonths)}</td>
                   <td className="px-6 py-4 text-slate-400 dark:text-slate-500 text-sm">
                     {new Date(pet.createdAt).toLocaleDateString()}
                   </td>
