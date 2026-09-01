@@ -3,12 +3,9 @@ import cors from 'cors';
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { executeLocalQuery } from './services/localDb';
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -16,30 +13,35 @@ const PORT = Number(process.env.PORT) || 3000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
-import { executeLocalQuery } from './services/localDb';
-
-// Database connection pool
-const dbConfig = {
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  port: Number(process.env.MYSQL_PORT) || 3306,
-};
+// Database connection configuration (supports standard variables and Railway environment variables)
+const dbHost = process.env.MYSQL_HOST || process.env.MYSQLHOST;
+const dbUser = process.env.MYSQL_USER || process.env.MYSQLUSER;
+const dbPassword = process.env.MYSQL_PASSWORD || process.env.MYSQLPASSWORD || '';
+const dbName = process.env.MYSQL_DATABASE || process.env.MYSQLDATABASE;
+const dbPort = Number(process.env.MYSQL_PORT || process.env.MYSQLPORT) || 3306;
+const dbUrl = process.env.MYSQL_URL || process.env.DATABASE_URL || process.env.MYSQL_PUBLIC_URL;
 
 let useLocalFallback = false;
 
-if (!dbConfig.host || !dbConfig.user || !dbConfig.database) {
+if (!dbUrl && (!dbHost || !dbUser || !dbName)) {
   console.warn('⚠️  Database environment variables are missing. Defaulting to local JSON database.');
   useLocalFallback = true;
 }
 
-const mysqlPool = mysql.createPool({
-  ...dbConfig,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+const poolConfig: any = dbUrl
+  ? { uri: dbUrl, waitForConnections: true, connectionLimit: 10, queueLimit: 0 }
+  : {
+      host: dbHost || 'localhost',
+      user: dbUser,
+      password: dbPassword,
+      database: dbName,
+      port: dbPort,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
+    };
+
+const mysqlPool = mysql.createPool(poolConfig);
 
 const pool = {
   async query(sql: string, params?: any[]): Promise<[any, any]> {
@@ -520,10 +522,11 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(path.join(__dirname, 'dist')));
-    // Use a middleware without a path string to avoid path-to-regexp issues in Express 5
+    const distPath = path.join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    // SPA catch-all
     app.use((req, res) => {
-      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+      res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
